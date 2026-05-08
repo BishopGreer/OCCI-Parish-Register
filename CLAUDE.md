@@ -6,7 +6,7 @@ Provides a complete canonical sacramental records management system for use at t
 
 This is a SEPARATE and INDEPENDENT project from OCCI Sacramental Records (the national database plugin). Do not mix changes between the two.
 
-**Current version:** 2.0.0
+**Current version:** 2.0.1
 **GitHub repository:** https://github.com/BishopGreer/OCCI-Parish-Register
 **Working directory:** ~/Projects/occi-parish-register
 
