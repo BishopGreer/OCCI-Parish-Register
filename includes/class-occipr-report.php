@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class OCCIPR_Report {
 
     public static function init() {
-        add_action( 'admin_post_occi_print_report', [ __CLASS__, 'print_report' ] );
+        add_action( 'admin_post_occipr_print_report', [ __CLASS__, 'print_report' ] );
     }
 
     // -------------------------------------------------------------------------
@@ -23,12 +23,12 @@ class OCCIPR_Report {
             <p>Search all registers for all sacramental records associated with an individual. The resulting report may be printed or sent to a requesting parish.</p>
 
             <form method="get" class="occi-search-form" style="margin-bottom:20px;">
-                <input type="hidden" name="page" value="occi-report">
+                <input type="hidden" name="page" value="occipr-report">
                 <input type="text" name="first" value="<?php echo esc_attr( $first ); ?>" placeholder="First name" class="regular-text">
                 <input type="text" name="last"  value="<?php echo esc_attr( $last );  ?>" placeholder="Last name"  class="regular-text">
                 <button type="submit" class="button button-primary">Search All Registers</button>
                 <?php if ( $results !== null ) : ?>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-report' ) ); ?>" class="button">Reset</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-report' ) ); ?>" class="button">Reset</a>
                 <?php endif; ?>
             </form>
 
@@ -46,8 +46,8 @@ class OCCIPR_Report {
                 <strong><?php echo self::count_total( $results ); ?> record(s) found across <?php echo self::count_registers( $results ); ?> register(s).</strong>
                 <?php
                 $print_url = wp_nonce_url(
-                    admin_url( 'admin-post.php?action=occi_print_report&first=' . urlencode( $first ) . '&last=' . urlencode( $last ) ),
-                    'occi_print_report', 'occi_nonce'
+                    admin_url( 'admin-post.php?action=occipr_print_report&first=' . urlencode( $first ) . '&last=' . urlencode( $last ) ),
+                    'occipr_print_report', 'occipr_nonce'
                 );
                 ?>
                 <a href="<?php echo esc_url( $print_url ); ?>" target="_blank" class="button button-primary">&#128438; Print / Save Report</a>
@@ -171,12 +171,12 @@ class OCCIPR_Report {
 
     private static function render_results( $results, $first, $last ) {
         $sections = [
-            'baptisms'      => [ 'Baptisms',            'occi-baptisms',      'baptism' ],
-            'confirmations' => [ 'Confirmations',        'occi-confirmations', 'confirmation' ],
-            'marriages'     => [ 'Marriages',            'occi-marriages',     'marriage' ],
-            'deaths'        => [ 'Deaths',               'occi-deaths',        'death' ],
-            'communions'    => [ 'First Communions',     'occi-communions',    'communion' ],
-            'ordinations'   => [ 'Ordinations',          'occi-ordinations',   'ordination' ],
+            'baptisms'      => [ 'Baptisms',            'occipr-baptisms',      'baptism' ],
+            'confirmations' => [ 'Confirmations',        'occipr-confirmations', 'confirmation' ],
+            'marriages'     => [ 'Marriages',            'occipr-marriages',     'marriage' ],
+            'deaths'        => [ 'Deaths',               'occipr-deaths',        'death' ],
+            'communions'    => [ 'First Communions',     'occipr-communions',    'communion' ],
+            'ordinations'   => [ 'Ordinations',          'occipr-ordinations',   'ordination' ],
         ];
         foreach ( $sections as $key => [ $label, $page_slug, $cert_type ] ) {
             if ( empty( $results[ $key ] ) ) continue;
@@ -190,32 +190,32 @@ class OCCIPR_Report {
                 $detail = '';
                 switch ( $key ) {
                     case 'baptisms':
-                        $date   = occi_format_date( $r->baptism_date );
+                        $date   = occipr_format_date( $r->baptism_date );
                         $name   = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                         $detail = 'Minister: ' . $r->minister_name;
                         break;
                     case 'confirmations':
-                        $date   = occi_format_date( $r->confirmation_date );
+                        $date   = occipr_format_date( $r->confirmation_date );
                         $name   = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                         $detail = 'Bishop: ' . $r->bishop_name . ( $r->saints_name ? ' | Saint\'s Name: ' . $r->saints_name : '' );
                         break;
                     case 'marriages':
-                        $date   = occi_format_date( $r->marriage_date );
+                        $date   = occipr_format_date( $r->marriage_date );
                         $name   = strtoupper( $r->party1_last_name ) . ', ' . $r->party1_first_name . ' &amp; ' . strtoupper( $r->party2_last_name ) . ', ' . $r->party2_first_name;
                         $detail = 'Minister: ' . $r->minister_name;
                         break;
                     case 'deaths':
-                        $date   = occi_format_date( $r->death_date );
+                        $date   = occipr_format_date( $r->death_date );
                         $name   = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                         $detail = $r->funeral_presider ? 'Presider: ' . $r->funeral_presider : '';
                         break;
                     case 'communions':
-                        $date   = occi_format_date( $r->communion_date );
+                        $date   = occipr_format_date( $r->communion_date );
                         $name   = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                         $detail = 'Presider: ' . $r->presider;
                         break;
                     case 'ordinations':
-                        $date   = occi_format_date( $r->ordination_date );
+                        $date   = occipr_format_date( $r->ordination_date );
                         $name   = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                         $detail = 'Rank: ' . $r->ordination_rank . ' | Bishop: ' . $r->presiding_bishop;
                         break;
@@ -241,7 +241,7 @@ class OCCIPR_Report {
     // -------------------------------------------------------------------------
 
     public static function print_report() {
-        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occi_print_report', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occipr_print_report', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
         $first   = sanitize_text_field( $_GET['first'] ?? '' );
@@ -461,8 +461,8 @@ foreach ( $sections as $key => $label ) :
             case 'baptisms':
                 $name = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                 $rows = [
-                    'Date of Baptism'  => occi_format_date( $r->baptism_date ),
-                    'Date of Birth'    => $r->birth_date ? occi_format_date( $r->birth_date ) : '',
+                    'Date of Baptism'  => occipr_format_date( $r->baptism_date ),
+                    'Date of Birth'    => $r->birth_date ? occipr_format_date( $r->birth_date ) : '',
                     'Place of Birth'   => $r->birth_place ?? '',
                     'Father'           => trim( $r->father_first_name . ' ' . $r->father_middle_name . ' ' . $r->father_last_name ),
                     'Mother'           => trim( $r->mother_first_name . ' ' . $r->mother_middle_name . ' ' . $r->mother_last_name ) . ( $r->mother_maiden_name ? ', née ' . strtoupper( $r->mother_maiden_name ) : '' ),
@@ -476,7 +476,7 @@ foreach ( $sections as $key => $label ) :
             case 'confirmations':
                 $name = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                 $rows = [
-                    'Date of Confirmation' => occi_format_date( $r->confirmation_date ),
+                    'Date of Confirmation' => occipr_format_date( $r->confirmation_date ),
                     'Saint\'s Name'        => $r->saints_name ?? '',
                     'Bishop / Delegate'    => $r->bishop_name,
                     'Parish'               => implode( ', ', array_filter( [ $r->parish_name, $r->parish_city, $r->parish_state ] ) ),
@@ -486,9 +486,9 @@ foreach ( $sections as $key => $label ) :
             case 'marriages':
                 $name = strtoupper( $r->party1_last_name ) . ', ' . $r->party1_first_name . ' &amp; ' . strtoupper( $r->party2_last_name ) . ', ' . $r->party2_first_name;
                 $rows = [
-                    'Date of Marriage' => occi_format_date( $r->marriage_date ),
-                    'Party 1'          => $r->party1_first_name . ' ' . $r->party1_last_name . ( $r->party1_birth_date ? ' (b. ' . occi_format_date( $r->party1_birth_date ) . ')' : '' ),
-                    'Party 2'          => $r->party2_first_name . ' ' . $r->party2_last_name . ( $r->party2_birth_date ? ' (b. ' . occi_format_date( $r->party2_birth_date ) . ')' : '' ),
+                    'Date of Marriage' => occipr_format_date( $r->marriage_date ),
+                    'Party 1'          => $r->party1_first_name . ' ' . $r->party1_last_name . ( $r->party1_birth_date ? ' (b. ' . occipr_format_date( $r->party1_birth_date ) . ')' : '' ),
+                    'Party 2'          => $r->party2_first_name . ' ' . $r->party2_last_name . ( $r->party2_birth_date ? ' (b. ' . occipr_format_date( $r->party2_birth_date ) . ')' : '' ),
                     'Witness 1'        => $r->witness1_name,
                     'Witness 2'        => $r->witness2_name,
                     'Minister'         => $r->minister_name,
@@ -498,8 +498,8 @@ foreach ( $sections as $key => $label ) :
             case 'deaths':
                 $name = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                 $rows = [
-                    'Date of Death'  => occi_format_date( $r->death_date ),
-                    'Funeral Date'   => $r->funeral_date ? occi_format_date( $r->funeral_date ) : '',
+                    'Date of Death'  => occipr_format_date( $r->death_date ),
+                    'Funeral Date'   => $r->funeral_date ? occipr_format_date( $r->funeral_date ) : '',
                     'Presider'       => $r->funeral_presider ?? '',
                     'Burial'         => implode( ', ', array_filter( [ $r->burial_location, $r->burial_city, $r->burial_state ] ) ),
                     'Parish'         => implode( ', ', array_filter( [ $r->parish_name, $r->parish_city, $r->parish_state ] ) ),
@@ -510,8 +510,8 @@ foreach ( $sections as $key => $label ) :
             case 'communions':
                 $name = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                 $rows = [
-                    'Date of Reception' => occi_format_date( $r->communion_date ),
-                    'Date of Baptism'   => $r->baptism_date ? occi_format_date( $r->baptism_date ) : '',
+                    'Date of Reception' => occipr_format_date( $r->communion_date ),
+                    'Date of Baptism'   => $r->baptism_date ? occipr_format_date( $r->baptism_date ) : '',
                     'Church of Baptism' => implode( ', ', array_filter( [ $r->baptism_church, $r->baptism_city, $r->baptism_state ] ) ),
                     'Presider'          => $r->presider,
                     'Parish'            => implode( ', ', array_filter( [ $r->parish_name, $r->parish_city, $r->parish_state ] ) ),
@@ -520,7 +520,7 @@ foreach ( $sections as $key => $label ) :
             case 'ordinations':
                 $name = strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' );
                 $rows = [
-                    'Date of Ordination' => occi_format_date( $r->ordination_date ),
+                    'Date of Ordination' => occipr_format_date( $r->ordination_date ),
                     'Rank'               => $r->ordination_rank,
                     'Presiding Bishop'   => $r->presiding_bishop,
                     'Parish'             => implode( ', ', array_filter( [ $r->parish_name, $r->parish_city, $r->parish_state ] ) ),

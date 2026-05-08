@@ -4,8 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class OCCIPR_Death {
 
     public static function init() {
-        add_action( 'admin_post_occi_save_death',   [ __CLASS__, 'save' ] );
-        add_action( 'admin_post_occi_delete_death', [ __CLASS__, 'delete' ] );
+        add_action( 'admin_post_occipr_save_death',   [ __CLASS__, 'save' ] );
+        add_action( 'admin_post_occipr_delete_death', [ __CLASS__, 'delete' ] );
     }
 
     public static function page() {
@@ -42,36 +42,36 @@ class OCCIPR_Death {
         <div class="wrap occi-wrap">
             <h1>Death Register
                 <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
                 <?php endif; ?>
             </h1>
             <?php echo $msg; ?>
             <form method="get" class="occi-search-form">
-                <input type="hidden" name="page" value="occi-deaths">
+                <input type="hidden" name="page" value="occipr-deaths">
                 <input type="text" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Search by name...">
                 <input type="date" name="date_from" value="<?php echo esc_attr( $date_from ); ?>">
                 <input type="date" name="date_to" value="<?php echo esc_attr( $date_to ); ?>">
                 <button type="submit" class="button">Search</button>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths' ) ); ?>" class="button">Reset</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths' ) ); ?>" class="button">Reset</a>
             </form>
             <table class="wp-list-table widefat fixed striped occi-register-table">
                 <thead><tr><th>Date of Death</th><th>Deceased</th><th>Burial Location</th><th>Funeral Date</th><th>Presider</th><th>Parish</th><th>Actions</th></tr></thead>
                 <tbody>
                 <?php if ( $records ) : foreach ( $records as $r ) : ?>
                 <tr>
-                    <td><?php echo esc_html( occi_format_date( $r->death_date ) ); ?></td>
+                    <td><?php echo esc_html( occipr_format_date( $r->death_date ) ); ?></td>
                     <td><strong><?php echo esc_html( strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' ) ); ?></strong>
                         <?php if ( $r->is_cremated ) echo '<br><small><em>Cremated</em></small>'; ?>
                         <?php if ( $r->is_graveside ) echo '<br><small><em>Graveside</em></small>'; ?></td>
                     <td class="occi-small"><?php echo esc_html( $r->burial_location ? $r->burial_location . ', ' . $r->burial_city . ', ' . $r->burial_state : '&mdash;' ); ?></td>
-                    <td><?php echo esc_html( $r->funeral_date ? occi_format_date( $r->funeral_date ) : '&mdash;' ); ?></td>
+                    <td><?php echo esc_html( $r->funeral_date ? occipr_format_date( $r->funeral_date ) : '&mdash;' ); ?></td>
                     <td class="occi-small"><?php echo esc_html( $r->funeral_presider ?: '&mdash;' ); ?></td>
                     <td class="occi-small"><?php echo esc_html( $r->parish_name ?: '&mdash;' ); ?></td>
                     <td class="occi-actions">
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths&action=view&id=' . $r->id ) ); ?>">View</a>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths&action=view&id=' . $r->id ) ); ?>">View</a>
                         <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths&action=edit&id=' . $r->id ) ); ?>">Edit</a>
-                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occi_delete_death&id=' . $r->id ), 'occi_delete_death_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this death record?')">Delete</a>
+                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths&action=edit&id=' . $r->id ) ); ?>">Edit</a>
+                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occipr_delete_death&id=' . $r->id ), 'occipr_delete_death_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this death record?')">Delete</a>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -89,9 +89,9 @@ class OCCIPR_Death {
         ?>
         <div class="wrap occi-wrap">
             <h1><?php echo $is_edit ? 'Edit Death Record' : 'New Death Entry'; ?></h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths' ) ); ?>">&larr; Back to Register</a>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="occi-form">
-                <?php wp_nonce_field( 'occi_save_death', 'occi_nonce' ); ?>
+                <?php wp_nonce_field( 'occipr_save_death', 'occipr_nonce' ); ?>
                 <input type="hidden" name="action" value="occi_save_death">
                 <?php if ( $is_edit ) : ?><input type="hidden" name="record_id" value="<?php echo esc_attr( $r->id ); ?>"><?php endif; ?>
                 <div class="occi-section">
@@ -153,7 +153,7 @@ class OCCIPR_Death {
                 </div>
                 <p class="submit">
                     <button type="submit" class="button button-primary"><?php echo $is_edit ? 'Update Record' : 'Save Record'; ?></button>
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths' ) ); ?>" class="button">Cancel</a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths' ) ); ?>" class="button">Cancel</a>
                 </p>
             </form>
         </div>
@@ -165,9 +165,9 @@ class OCCIPR_Death {
         ?>
         <div class="wrap occi-wrap">
             <h1>Death Register Record</h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths' ) ); ?>">&larr; Back to Register</a>
             <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-deaths&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-deaths&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit</a>
             <?php endif; ?>
             <button onclick="window.print()" class="button" style="margin-left:10px">Print Record</button>
             <?php echo OCCIPR_Certificates::certificate_button( 'death', $r->id ); ?>
@@ -176,13 +176,13 @@ class OCCIPR_Death {
                     <?php if ( $r->parish_name ) : ?><p><?php echo esc_html( $r->parish_name . ' &bull; ' . $r->parish_city . ', ' . $r->parish_state ); ?></p><?php endif; ?>
                 </div>
                 <table class="occi-view-table">
-                    <tr><th>Date of Death</th><td><?php echo esc_html( occi_format_date( $r->death_date ) ); ?></td>
+                    <tr><th>Date of Death</th><td><?php echo esc_html( occipr_format_date( $r->death_date ) ); ?></td>
                         <th>Deceased</th><td><strong><?php echo esc_html( strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' ) ); ?></strong></td></tr>
                     <tr><th>Burial Location</th><td colspan="3"><?php echo esc_html( implode( ', ', array_filter( [ $r->burial_location, $r->burial_city, $r->burial_state ] ) ) ?: '&mdash;' ); ?></td></tr>
                     <?php if ( $r->is_cremated ) : ?>
-                    <tr><th>Cremation</th><td colspan="3">Yes. <?php echo $r->ashes_interment_date ? 'Ashes interred: ' . esc_html( occi_format_date( $r->ashes_interment_date ) . ( $r->ashes_interment_place ? ', ' . $r->ashes_interment_place : '' ) ) : ''; ?></td></tr>
+                    <tr><th>Cremation</th><td colspan="3">Yes. <?php echo $r->ashes_interment_date ? 'Ashes interred: ' . esc_html( occipr_format_date( $r->ashes_interment_date ) . ( $r->ashes_interment_place ? ', ' . $r->ashes_interment_place : '' ) ) : ''; ?></td></tr>
                     <?php endif; ?>
-                    <tr><th>Funeral Date</th><td><?php echo esc_html( $r->funeral_date ? occi_format_date( $r->funeral_date ) : '&mdash;' ); ?></td>
+                    <tr><th>Funeral Date</th><td><?php echo esc_html( $r->funeral_date ? occipr_format_date( $r->funeral_date ) : '&mdash;' ); ?></td>
                         <th>Presider</th><td><?php echo esc_html( $r->funeral_presider ?: '&mdash;' ); ?></td></tr>
                     <tr><th>Parish</th><td><?php echo esc_html( $r->parish_name ? $r->parish_name . ', ' . $r->parish_city . ', ' . $r->parish_state : '&mdash;' ); ?></td>
                         <th>Graveside Service</th><td><?php echo $r->is_graveside ? 'Yes' : 'No'; ?></td></tr>
@@ -202,7 +202,7 @@ class OCCIPR_Death {
     }
 
     public static function save() {
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_save_death', 'occi_nonce' ) ) { wp_die( 'Access denied.' ); }
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_save_death', 'occipr_nonce' ) ) { wp_die( 'Access denied.' ); }
         global $wpdb;
         $data = [
             'death_date'             => sanitize_text_field( $_POST['death_date'] ?? '' ),
@@ -227,16 +227,16 @@ class OCCIPR_Death {
         $id = intval( $_POST['record_id'] ?? 0 );
         if ( $id ) { $wpdb->update( "{$wpdb->prefix}occipr_deaths", $data, [ 'id' => $id ] ); }
         else { $wpdb->insert( "{$wpdb->prefix}occipr_deaths", $data ); }
-        wp_redirect( admin_url( 'admin.php?page=occi-deaths&saved=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-deaths&saved=1' ) );
         exit;
     }
 
     public static function delete() {
         $id = intval( $_GET['id'] ?? 0 );
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_delete_death_' . $id ) ) { wp_die( 'Access denied.' ); }
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_delete_death_' . $id ) ) { wp_die( 'Access denied.' ); }
         global $wpdb;
         $wpdb->delete( "{$wpdb->prefix}occipr_deaths", [ 'id' => $id ], [ '%d' ] );
-        wp_redirect( admin_url( 'admin.php?page=occi-deaths&deleted=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-deaths&deleted=1' ) );
         exit;
     }
 }

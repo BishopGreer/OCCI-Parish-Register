@@ -10,12 +10,20 @@ class OCCIPR_Database {
 
         self::update_capabilities();
 
-        // Parishes — includes per-parish certificate template URL
+        // Parishes — includes contact info and per-parish certificate template URL
         dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_parishes (
             id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             name varchar(255) NOT NULL,
+            address_street varchar(255) DEFAULT NULL,
             city varchar(100) NOT NULL,
             state varchar(50) NOT NULL,
+            address_zip varchar(20) DEFAULT NULL,
+            country varchar(100) DEFAULT NULL,
+            phone varchar(30) DEFAULT NULL,
+            email varchar(150) DEFAULT NULL,
+            website varchar(255) DEFAULT NULL,
+            facebook varchar(255) DEFAULT NULL,
+            instagram varchar(255) DEFAULT NULL,
             cert_template_url varchar(500) DEFAULT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -159,6 +167,69 @@ class OCCIPR_Database {
             KEY last_name (last_name(50))
         ) $charset;" );
 
+        // Households (parish directory)
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_households (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            family_name varchar(150) NOT NULL,
+            address_street varchar(255) DEFAULT NULL,
+            address_city varchar(100) DEFAULT NULL,
+            address_state varchar(100) DEFAULT NULL,
+            address_zip varchar(20) DEFAULT NULL,
+            address_country varchar(100) DEFAULT NULL,
+            phone varchar(30) DEFAULT NULL,
+            email varchar(150) DEFAULT NULL,
+            photo_id bigint(20) UNSIGNED DEFAULT NULL,
+            envelope_number varchar(20) DEFAULT NULL,
+            status varchar(20) NOT NULL DEFAULT 'active',
+            notes text DEFAULT NULL,
+            show_address tinyint(1) NOT NULL DEFAULT 1,
+            show_phone tinyint(1) NOT NULL DEFAULT 1,
+            show_email tinyint(1) NOT NULL DEFAULT 1,
+            show_photo tinyint(1) NOT NULL DEFAULT 1,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY family_name (family_name(50)),
+            KEY parish_id (parish_id),
+            KEY status (status)
+        ) $charset;" );
+
+        // Members (individuals within a household)
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_members (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            household_id bigint(20) UNSIGNED NOT NULL,
+            first_name varchar(100) NOT NULL,
+            last_name varchar(100) NOT NULL,
+            preferred_name varchar(100) DEFAULT NULL,
+            middle_name varchar(100) DEFAULT NULL,
+            relationship varchar(50) NOT NULL DEFAULT 'other',
+            birth_date date DEFAULT NULL,
+            member_since date DEFAULT NULL,
+            status varchar(20) NOT NULL DEFAULT 'active',
+            gender varchar(100) DEFAULT NULL,
+            gender_other varchar(100) DEFAULT NULL,
+            pronouns varchar(100) DEFAULT NULL,
+            phone varchar(30) DEFAULT NULL,
+            email varchar(150) DEFAULT NULL,
+            facebook varchar(255) DEFAULT NULL,
+            instagram varchar(255) DEFAULT NULL,
+            website varchar(255) DEFAULT NULL,
+            photo_id bigint(20) UNSIGNED DEFAULT NULL,
+            notes text DEFAULT NULL,
+            show_phone tinyint(1) NOT NULL DEFAULT 1,
+            show_email tinyint(1) NOT NULL DEFAULT 1,
+            show_social tinyint(1) NOT NULL DEFAULT 1,
+            show_birthday tinyint(1) NOT NULL DEFAULT 1,
+            show_photo tinyint(1) NOT NULL DEFAULT 1,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY household_id (household_id),
+            KEY last_name (last_name(50)),
+            KEY status (status)
+        ) $charset;" );
+
         // Ordinations
         dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_ordinations (
             id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -179,6 +250,103 @@ class OCCIPR_Database {
             PRIMARY KEY (id),
             KEY ordination_date (ordination_date),
             KEY last_name (last_name(50))
+        ) $charset;" );
+
+        // Donation funds
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_donation_funds (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            name varchar(150) NOT NULL,
+            description text DEFAULT NULL,
+            sort_order int NOT NULL DEFAULT 0,
+            is_active tinyint(1) NOT NULL DEFAULT 1,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY name (name(50))
+        ) $charset;" );
+
+        // Donations
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_donations (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            donation_date date NOT NULL,
+            fund_id bigint(20) UNSIGNED DEFAULT NULL,
+            amount decimal(10,2) NOT NULL DEFAULT 0.00,
+            payment_method varchar(20) NOT NULL DEFAULT 'cash',
+            check_number varchar(50) DEFAULT NULL,
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            is_anonymous tinyint(1) NOT NULL DEFAULT 0,
+            donor_name varchar(200) DEFAULT NULL,
+            envelope_number varchar(20) DEFAULT NULL,
+            household_id bigint(20) UNSIGNED DEFAULT NULL,
+            notes text DEFAULT NULL,
+            source varchar(20) NOT NULL DEFAULT 'manual',
+            external_id varchar(100) DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            created_by bigint(20) UNSIGNED DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY donation_date (donation_date),
+            KEY fund_id (fund_id),
+            KEY parish_id (parish_id),
+            KEY household_id (household_id)
+        ) $charset;" );
+
+        // Mass Attendance
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_attendance (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            service_date date NOT NULL,
+            service_type varchar(20) NOT NULL DEFAULT 'sunday',
+            service_label varchar(255) DEFAULT NULL,
+            service_time time DEFAULT NULL,
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            headcount int UNSIGNED NOT NULL DEFAULT 0,
+            communion_count int UNSIGNED DEFAULT NULL,
+            notes text DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY service_date (service_date),
+            KEY parish_id (parish_id)
+        ) $charset;" );
+
+        // OCIA (Order of Christian Initiation of Adults)
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_ocia (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            first_name varchar(100) NOT NULL,
+            preferred_name varchar(100) DEFAULT NULL,
+            middle_name varchar(100) DEFAULT NULL,
+            last_name varchar(100) NOT NULL,
+            birth_date date DEFAULT NULL,
+            previous_faith varchar(150) DEFAULT NULL,
+            address_street varchar(255) DEFAULT NULL,
+            address_city varchar(100) DEFAULT NULL,
+            address_state varchar(100) DEFAULT NULL,
+            address_zip varchar(20) DEFAULT NULL,
+            phone varchar(30) DEFAULT NULL,
+            email varchar(150) DEFAULT NULL,
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            inquiry_date date DEFAULT NULL,
+            enrollment_date date DEFAULT NULL,
+            election_date date DEFAULT NULL,
+            completion_date date DEFAULT NULL,
+            status varchar(20) NOT NULL DEFAULT 'inquirer',
+            catechist varchar(255) DEFAULT NULL,
+            presider varchar(255) DEFAULT NULL,
+            sponsor_name varchar(255) DEFAULT NULL,
+            sponsor2_name varchar(255) DEFAULT NULL,
+            previously_baptized tinyint(1) NOT NULL DEFAULT 0,
+            prior_baptism_date date DEFAULT NULL,
+            prior_baptism_church varchar(255) DEFAULT NULL,
+            baptism_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            confirmation_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            communion_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            notes text DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY last_name (last_name(50)),
+            KEY status (status),
+            KEY parish_id (parish_id),
+            KEY enrollment_date (enrollment_date)
         ) $charset;" );
 
         update_option( 'occi_pr_db_version', OCCI_PR_VERSION );

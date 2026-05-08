@@ -1,13 +1,13 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-class OCCI_ImportExport {
+class OCCIPR_ImportExport {
 
     const FORMAT_VERSION = 1;
 
     public static function init() {
-        add_action( 'admin_post_occi_export', [ __CLASS__, 'handle_export' ] );
-        add_action( 'admin_post_occi_import', [ __CLASS__, 'handle_import' ] );
+        add_action( 'admin_post_occipr_export', [ __CLASS__, 'handle_export' ] );
+        add_action( 'admin_post_occipr_import', [ __CLASS__, 'handle_import' ] );
     }
 
     // =========================================================================
@@ -37,7 +37,7 @@ class OCCI_ImportExport {
                         <h2>Export Records</h2>
                         <p>Export sacramental records to a JSON file that can be sent to the national OCCI database or another parish installation. The file includes all record types selected and embeds parish information in each record.</p>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                            <?php wp_nonce_field( 'occi_export', 'occi_nonce' ); ?>
+                            <?php wp_nonce_field( 'occipr_export', 'occipr_nonce' ); ?>
                             <input type="hidden" name="action" value="occi_export">
                             <table class="form-table">
                                 <tr>
@@ -99,7 +99,7 @@ class OCCI_ImportExport {
                         </ul>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
                               enctype="multipart/form-data">
-                            <?php wp_nonce_field( 'occi_import', 'occi_nonce' ); ?>
+                            <?php wp_nonce_field( 'occipr_import', 'occipr_nonce' ); ?>
                             <input type="hidden" name="action" value="occi_import">
                             <table class="form-table">
                                 <tr>
@@ -138,7 +138,7 @@ class OCCI_ImportExport {
     // =========================================================================
 
     public static function handle_export() {
-        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occi_export', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occipr_export', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
         $parish_id    = intval( $_POST['export_parish_id'] ?? 0 );
@@ -155,7 +155,7 @@ class OCCI_ImportExport {
         }
 
         $data = [
-            'occi_export' => [
+            'occipr_export' => [
                 'format_version' => self::FORMAT_VERSION,
                 'plugin_version' => OCCI_PR_VERSION,
                 'exported_at'    => current_time( 'c' ),
@@ -173,7 +173,7 @@ class OCCI_ImportExport {
         foreach ( $export_types as $type ) {
             $counts[ $type ] = count( $data[ $type ] ?? [] );
         }
-        $data['occi_export']['record_counts'] = $counts;
+        $data['occipr_export']['record_counts'] = $counts;
 
         $filename = 'occi-export-' . sanitize_file_name( strtolower( str_replace( [ ',', ' ', '/' ], [ '', '-', '-' ], $parish_label ) ) ) . '-' . date( 'Y-m-d' ) . '.json';
 
@@ -257,7 +257,7 @@ class OCCI_ImportExport {
     // =========================================================================
 
     public static function handle_import() {
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_import', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_import', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
 
@@ -271,25 +271,25 @@ class OCCI_ImportExport {
         }
 
         $data = json_decode( $file_content, true );
-        if ( json_last_error() !== JSON_ERROR_NONE || ! isset( $data['occi_export'] ) ) {
+        if ( json_last_error() !== JSON_ERROR_NONE || ! isset( $data['occipr_export'] ) ) {
             wp_die( 'Invalid file format. Please upload a valid OCCI sacramental records export file.' );
         }
 
-        if ( ( $data['occi_export']['format_version'] ?? 0 ) !== self::FORMAT_VERSION ) {
+        if ( ( $data['occipr_export']['format_version'] ?? 0 ) !== self::FORMAT_VERSION ) {
             wp_die( 'This export file was created with an incompatible format version. Please update the plugin on both systems.' );
         }
 
         $results = self::process_import( $data );
 
         set_transient( 'occi_import_results_' . get_current_user_id(), $results, 300 );
-        wp_redirect( admin_url( 'admin.php?page=occi-import-export&imported=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-import-export&imported=1' ) );
         exit;
     }
 
     private static function process_import( array $data ) {
         $results = [
-            'source'        => $data['occi_export']['exported_by'] ?? 'Unknown',
-            'exported_at'   => $data['occi_export']['exported_at'] ?? '',
+            'source'        => $data['occipr_export']['exported_by'] ?? 'Unknown',
+            'exported_at'   => $data['occipr_export']['exported_at'] ?? '',
             'parishes_created' => 0,
             'registers'     => [],
         ];

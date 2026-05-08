@@ -6,7 +6,7 @@ Provides a complete canonical sacramental records management system for use at t
 
 This is a SEPARATE and INDEPENDENT project from OCCI Sacramental Records (the national database plugin). Do not mix changes between the two.
 
-**Current version:** 1.0.0
+**Current version:** 1.0.9
 **GitHub repository:** https://github.com/BishopGreer/OCCI-Parish-Register
 **Working directory:** ~/Projects/occi-parish-register
 
@@ -42,6 +42,7 @@ occi-parish-register/
     ├── class-occipr-marriage.php      # Marriage register CRUD
     ├── class-occipr-ordination.php    # Ordination register CRUD
     ├── class-occipr-parishes.php      # Parish registry with per-parish cert templates
+    ├── class-occipr-directory.php     # Parish Directory: households + members, privacy controls, print views
     ├── class-occipr-report.php        # Person Sacramental Report (cross-register search)
     ├── class-occipr-updater.php       # Custom updater (GitHub releases, no config needed)
     └── functions.php                  # Shared helper functions
@@ -59,6 +60,8 @@ occi-parish-register/
 
 ## Database Tables
 - `{$wpdb->prefix}occipr_parishes`
+- `{$wpdb->prefix}occipr_households`  — parish directory family units
+- `{$wpdb->prefix}occipr_members`     — individuals within a household
 - `{$wpdb->prefix}occipr_baptisms`
 - `{$wpdb->prefix}occipr_confirmations`
 - `{$wpdb->prefix}occipr_marriages`

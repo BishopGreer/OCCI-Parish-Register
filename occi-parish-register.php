@@ -3,7 +3,7 @@
  * Plugin Name:       OCCI Parish Register
  * Plugin URI:        https://myocci.org
  * Description:       Parish-level sacramental record database for Old Catholic Churches International. Manages Baptism, Confirmation, Marriage, Death, First Communion, and Ordination registers.
- * Version:           1.0.0
+ * Version:           1.0.9
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Old Catholic Churches International
@@ -14,7 +14,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'OCCI_PR_VERSION',    '1.0.0' );
+define( 'OCCI_PR_VERSION',    '1.0.9' );
 define( 'OCCI_PR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OCCI_PR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -31,13 +31,21 @@ require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-ordination.php';
 require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-certificates.php';
 require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-report.php';
 require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-import-export.php';
+require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-directory.php';
+require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-attendance.php';
+require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-donations.php';
+require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-ocia.php';
+require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-parish-reports.php';
 require_once OCCI_PR_PLUGIN_DIR . 'includes/class-occipr-updater.php';
 
 register_activation_hook( __FILE__, [ 'OCCIPR_Database', 'install' ] );
 register_deactivation_hook( __FILE__, [ 'OCCIPR_Database', 'deactivate' ] );
 
 add_action( 'plugins_loaded', function () {
-    if ( get_option( 'occi_pr_db_version' ) !== OCCI_PR_VERSION ) {
+    global $wpdb;
+    $needs_install = get_option( 'occi_pr_db_version' ) !== OCCI_PR_VERSION
+        || ! $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}occipr_households'" );
+    if ( $needs_install ) {
         OCCIPR_Database::install();
     }
     OCCIPR_Admin::init();
@@ -50,6 +58,10 @@ add_action( 'plugins_loaded', function () {
     OCCIPR_Ordination::init();
     OCCIPR_Certificates::init();
     OCCIPR_Report::init();
-    OCCI_ImportExport::init();
+    OCCIPR_ImportExport::init();
+    OCCIPR_Directory::init();
+    OCCIPR_Attendance::init();
+    OCCIPR_Donations::init();
+    OCCIPR_OCIA::init();
     OCCIPR_Updater::init();
 } );

@@ -145,7 +145,7 @@ class OCCIPR_Updater {
             </table>
             <?php if ( current_user_can( 'update_plugins' ) ) : ?>
             <p style="margin-top:12px;">
-                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=occi-cert-settings&occi_clear_update_cache=1' ), 'occi_clear_update_cache' ) ); ?>"
+                <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=occipr-cert-settings&occi_clear_update_cache=1' ), 'occi_clear_update_cache' ) ); ?>"
                    class="button">Force Update Check Now</a>
             </p>
             <?php endif; ?>
@@ -158,7 +158,7 @@ class OCCIPR_Updater {
         if ( ! check_admin_referer( 'occi_clear_update_cache' ) ) return;
         delete_transient( self::TRANSIENT_KEY );
         delete_site_transient( 'update_plugins' );
-        wp_redirect( admin_url( 'admin.php?page=occi-cert-settings&cache_cleared=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-cert-settings&cache_cleared=1' ) );
         exit;
     }
 }

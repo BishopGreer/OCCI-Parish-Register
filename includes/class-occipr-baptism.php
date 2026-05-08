@@ -4,8 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class OCCIPR_Baptism {
 
     public static function init() {
-        add_action( 'admin_post_occi_save_baptism',   [ __CLASS__, 'save' ] );
-        add_action( 'admin_post_occi_delete_baptism', [ __CLASS__, 'delete' ] );
+        add_action( 'admin_post_occipr_save_baptism',   [ __CLASS__, 'save' ] );
+        add_action( 'admin_post_occipr_delete_baptism', [ __CLASS__, 'delete' ] );
     }
 
     public static function page() {
@@ -55,17 +55,17 @@ class OCCIPR_Baptism {
         <div class="wrap occi-wrap">
             <h1>Baptism Register
                 <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
                 <?php endif; ?>
             </h1>
             <?php echo $message; ?>
             <form method="get" class="occi-search-form">
-                <input type="hidden" name="page" value="occi-baptisms">
+                <input type="hidden" name="page" value="occipr-baptisms">
                 <input type="text" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Search by name..." class="regular-text">
                 <input type="date" name="date_from" value="<?php echo esc_attr( $date_from ); ?>" title="Date From">
                 <input type="date" name="date_to" value="<?php echo esc_attr( $date_to ); ?>" title="Date To">
                 <button type="submit" class="button">Search</button>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms' ) ); ?>" class="button">Reset</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms' ) ); ?>" class="button">Reset</a>
             </form>
             <table class="wp-list-table widefat fixed striped occi-register-table">
                 <thead><tr>
@@ -81,7 +81,7 @@ class OCCIPR_Baptism {
                 <tbody>
                 <?php if ( $records ) : foreach ( $records as $r ) : ?>
                 <tr>
-                    <td><?php echo esc_html( occi_format_date( $r->baptism_date ) ); ?></td>
+                    <td><?php echo esc_html( occipr_format_date( $r->baptism_date ) ); ?></td>
                     <td><strong><?php echo esc_html( strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' ) ); ?></strong></td>
                     <td><?php echo esc_html( $r->father_first_name ? $r->father_last_name . ', ' . $r->father_first_name : '&mdash;' ); ?></td>
                     <td><?php echo esc_html( $r->mother_first_name ? $r->mother_last_name . ', ' . $r->mother_first_name . ( $r->mother_maiden_name ? ' (née ' . $r->mother_maiden_name . ')' : '' ) : '&mdash;' ); ?></td>
@@ -89,10 +89,10 @@ class OCCIPR_Baptism {
                     <td class="occi-small"><?php echo esc_html( $r->minister_name ); ?></td>
                     <td class="occi-small"><?php echo esc_html( $r->parish_name ? $r->parish_name . ', ' . $r->parish_city : ( $r->alt_location ?: '&mdash;' ) ); ?></td>
                     <td class="occi-actions">
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms&action=view&id=' . $r->id ) ); ?>">View</a>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms&action=view&id=' . $r->id ) ); ?>">View</a>
                         <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms&action=edit&id=' . $r->id ) ); ?>">Edit</a>
-                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occi_delete_baptism&id=' . $r->id ), 'occi_delete_baptism_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this baptism record? This action cannot be undone.')">Delete</a>
+                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms&action=edit&id=' . $r->id ) ); ?>">Edit</a>
+                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occipr_delete_baptism&id=' . $r->id ), 'occipr_delete_baptism_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this baptism record? This action cannot be undone.')">Delete</a>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -112,10 +112,10 @@ class OCCIPR_Baptism {
         ?>
         <div class="wrap occi-wrap">
             <h1><?php echo $is_edit ? 'Edit Baptism Record' : 'New Baptism Entry'; ?></h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms' ) ); ?>">&larr; Back to Register</a>
             <?php echo $message; ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="occi-form">
-                <?php wp_nonce_field( 'occi_save_baptism', 'occi_nonce' ); ?>
+                <?php wp_nonce_field( 'occipr_save_baptism', 'occipr_nonce' ); ?>
                 <input type="hidden" name="action" value="occi_save_baptism">
                 <?php if ( $is_edit ) : ?><input type="hidden" name="record_id" value="<?php echo esc_attr( $r->id ); ?>"><?php endif; ?>
 
@@ -225,7 +225,7 @@ class OCCIPR_Baptism {
                             <td><select name="parish_id">
                                 <?php echo OCCIPR_Database::parish_dropdown( $r->parish_id ?? 0 ); ?>
                             </select>
-                            <p class="description">If the parish is not listed, add it under <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-parishes' ) ); ?>">Parishes</a>.</p></td></tr>
+                            <p class="description">If the parish is not listed, add it under <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-parishes' ) ); ?>">Parishes</a>.</p></td></tr>
                         <tr><th><label>Alternate Location</label></th>
                             <td><input type="text" name="alt_location" class="regular-text" value="<?php echo esc_attr( $r->alt_location ?? '' ); ?>" placeholder="If baptism did not occur at the parish"></td></tr>
                     </table>
@@ -245,7 +245,7 @@ class OCCIPR_Baptism {
 
                 <p class="submit">
                     <button type="submit" class="button button-primary"><?php echo $is_edit ? 'Update Record' : 'Save Record'; ?></button>
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms' ) ); ?>" class="button">Cancel</a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms' ) ); ?>" class="button">Cancel</a>
                 </p>
             </form>
         </div>
@@ -257,9 +257,9 @@ class OCCIPR_Baptism {
         ?>
         <div class="wrap occi-wrap">
             <h1>Baptism Certificate Record</h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms' ) ); ?>">&larr; Back to Register</a>
             <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-baptisms&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit Record</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-baptisms&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit Record</a>
             <?php endif; ?>
             <button onclick="window.print()" class="button" style="margin-left:10px">Print Record</button>
             <?php echo OCCIPR_Certificates::certificate_button( 'baptism', $r->id ); ?>
@@ -272,8 +272,8 @@ class OCCIPR_Baptism {
                     <?php endif; ?>
                 </div>
                 <table class="occi-view-table">
-                    <tr><th>Date of Baptism</th><td><?php echo esc_html( occi_format_date( $r->baptism_date ) ); ?></td>
-                        <th>Date of Birth</th><td><?php echo esc_html( $r->birth_date ? occi_format_date( $r->birth_date ) : '&mdash;' ); ?></td></tr>
+                    <tr><th>Date of Baptism</th><td><?php echo esc_html( occipr_format_date( $r->baptism_date ) ); ?></td>
+                        <th>Date of Birth</th><td><?php echo esc_html( $r->birth_date ? occipr_format_date( $r->birth_date ) : '&mdash;' ); ?></td></tr>
                     <tr><th>Place of Birth</th><td colspan="3"><?php echo esc_html( $r->birth_place ?: '&mdash;' ); ?></td></tr>
                     <tr><th>Name of Baptized</th><td colspan="3"><strong><?php echo esc_html( strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' ) ); ?></strong></td></tr>
                     <tr><th>Father</th><td><?php echo esc_html( $r->father_first_name ? $r->father_first_name . ( $r->father_middle_name ? ' ' . $r->father_middle_name : '' ) . ' ' . strtoupper( $r->father_last_name ) : '&mdash;' ); ?></td>
@@ -302,7 +302,7 @@ class OCCIPR_Baptism {
     }
 
     public static function save() {
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_save_baptism', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_save_baptism', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
         global $wpdb;
@@ -339,7 +339,7 @@ class OCCIPR_Baptism {
             'created_by'          => get_current_user_id(),
         ];
         if ( empty( $data['baptism_date'] ) || empty( $data['first_name'] ) || empty( $data['last_name'] ) || empty( $data['minister_name'] ) ) {
-            wp_redirect( admin_url( 'admin.php?page=occi-baptisms&action=' . ( intval( $_POST['record_id'] ?? 0 ) ? 'edit&id=' . intval( $_POST['record_id'] ) : 'add' ) . '&error=1' ) );
+            wp_redirect( admin_url( 'admin.php?page=occipr-baptisms&action=' . ( intval( $_POST['record_id'] ?? 0 ) ? 'edit&id=' . intval( $_POST['record_id'] ) : 'add' ) . '&error=1' ) );
             exit;
         }
         $id = intval( $_POST['record_id'] ?? 0 );
@@ -349,24 +349,24 @@ class OCCIPR_Baptism {
             $wpdb->insert( "{$wpdb->prefix}occipr_baptisms", $data );
             $id = $wpdb->insert_id;
         }
-        wp_redirect( admin_url( 'admin.php?page=occi-baptisms&saved=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-baptisms&saved=1' ) );
         exit;
     }
 
     public static function delete() {
         $id = intval( $_GET['id'] ?? 0 );
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_delete_baptism_' . $id ) ) {
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_delete_baptism_' . $id ) ) {
             wp_die( 'Access denied.' );
         }
         global $wpdb;
         $wpdb->delete( "{$wpdb->prefix}occipr_baptisms", [ 'id' => $id ], [ '%d' ] );
-        wp_redirect( admin_url( 'admin.php?page=occi-baptisms&deleted=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-baptisms&deleted=1' ) );
         exit;
     }
 
     private static function sort_link( $col, $label, $current_col, $current_order ) {
         $order = ( $current_col === $col && $current_order === 'ASC' ) ? 'DESC' : 'ASC';
-        $url   = admin_url( 'admin.php?page=occi-baptisms&orderby=' . $col . '&order=' . $order );
+        $url   = admin_url( 'admin.php?page=occipr-baptisms&orderby=' . $col . '&order=' . $order );
         $arrow = $current_col === $col ? ( $current_order === 'ASC' ? ' &uarr;' : ' &darr;' ) : '';
         return '<a href="' . esc_url( $url ) . '">' . esc_html( $label ) . $arrow . '</a>';
     }

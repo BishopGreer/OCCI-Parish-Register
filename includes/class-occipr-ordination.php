@@ -4,8 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class OCCIPR_Ordination {
 
     public static function init() {
-        add_action( 'admin_post_occi_save_ordination',   [ __CLASS__, 'save' ] );
-        add_action( 'admin_post_occi_delete_ordination', [ __CLASS__, 'delete' ] );
+        add_action( 'admin_post_occipr_save_ordination',   [ __CLASS__, 'save' ] );
+        add_action( 'admin_post_occipr_delete_ordination', [ __CLASS__, 'delete' ] );
     }
 
     public static function page() {
@@ -44,12 +44,12 @@ class OCCIPR_Ordination {
         <div class="wrap occi-wrap">
             <h1>Ordination Register
                 <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations&action=add' ) ); ?>" class="page-title-action">Add New Entry</a>
                 <?php endif; ?>
             </h1>
             <?php echo $msg; ?>
             <form method="get" class="occi-search-form">
-                <input type="hidden" name="page" value="occi-ordinations">
+                <input type="hidden" name="page" value="occipr-ordinations">
                 <input type="text" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Search by name or bishop...">
                 <select name="rank">
                     <option value="">All Ranks</option>
@@ -58,7 +58,7 @@ class OCCIPR_Ordination {
                     <option value="Bishop"  <?php selected( $rank_filter, 'Bishop' ); ?>>Bishop</option>
                 </select>
                 <button type="submit" class="button">Search</button>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations' ) ); ?>" class="button">Reset</a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations' ) ); ?>" class="button">Reset</a>
             </form>
             <table class="wp-list-table widefat fixed striped occi-register-table">
                 <thead><tr>
@@ -67,7 +67,7 @@ class OCCIPR_Ordination {
                 <tbody>
                 <?php if ( $records ) : foreach ( $records as $r ) : ?>
                 <tr>
-                    <td><?php echo esc_html( occi_format_date( $r->ordination_date ) ); ?></td>
+                    <td><?php echo esc_html( occipr_format_date( $r->ordination_date ) ); ?></td>
                     <td><strong><?php echo esc_html( strtoupper( $r->last_name ) . ', ' . $r->first_name . ( $r->middle_name ? ' ' . $r->middle_name : '' ) ); ?></strong></td>
                     <td><span class="occi-rank occi-rank-<?php echo esc_attr( strtolower( $r->ordination_rank ) ); ?>"><?php echo esc_html( $r->ordination_rank ); ?></span></td>
                     <td><?php echo esc_html( $r->presiding_bishop ); ?></td>
@@ -77,10 +77,10 @@ class OCCIPR_Ordination {
                     ?></td>
                     <td class="occi-small"><?php echo esc_html( $r->parish_name ?: ( $r->alt_location ?: '&mdash;' ) ); ?></td>
                     <td class="occi-actions">
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations&action=view&id=' . $r->id ) ); ?>">View</a>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations&action=view&id=' . $r->id ) ); ?>">View</a>
                         <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations&action=edit&id=' . $r->id ) ); ?>">Edit</a>
-                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occi_delete_ordination&id=' . $r->id ), 'occi_delete_ordination_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this ordination record? This action cannot be undone.')">Delete</a>
+                        | <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations&action=edit&id=' . $r->id ) ); ?>">Edit</a>
+                        | <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occipr_delete_ordination&id=' . $r->id ), 'occipr_delete_ordination_' . $r->id ) ); ?>" class="occi-delete" onclick="return confirm('Delete this ordination record? This action cannot be undone.')">Delete</a>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -100,9 +100,9 @@ class OCCIPR_Ordination {
         ?>
         <div class="wrap occi-wrap">
             <h1><?php echo $is_edit ? 'Edit Ordination Record' : 'New Ordination Entry'; ?></h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations' ) ); ?>">&larr; Back to Register</a>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="occi-form">
-                <?php wp_nonce_field( 'occi_save_ordination', 'occi_nonce' ); ?>
+                <?php wp_nonce_field( 'occipr_save_ordination', 'occipr_nonce' ); ?>
                 <input type="hidden" name="action" value="occi_save_ordination">
                 <?php if ( $is_edit ) : ?><input type="hidden" name="record_id" value="<?php echo esc_attr( $r->id ); ?>"><?php endif; ?>
 
@@ -159,7 +159,7 @@ class OCCIPR_Ordination {
                     <table class="form-table">
                         <tr><th><label>Parish</label></th>
                             <td><select name="parish_id"><?php echo OCCIPR_Database::parish_dropdown( $r->parish_id ?? 0 ); ?></select>
-                            <p class="description">If the parish is not listed, add it under <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-parishes' ) ); ?>">Parishes</a>.</p></td></tr>
+                            <p class="description">If the parish is not listed, add it under <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-parishes' ) ); ?>">Parishes</a>.</p></td></tr>
                         <tr><th><label>Alternate Location</label></th>
                             <td><input type="text" name="alt_location" class="regular-text" value="<?php echo esc_attr( $r->alt_location ?? '' ); ?>" placeholder="If the ordination did not occur at the parish"></td></tr>
                     </table>
@@ -175,7 +175,7 @@ class OCCIPR_Ordination {
 
                 <p class="submit">
                     <button type="submit" class="button button-primary"><?php echo $is_edit ? 'Update Record' : 'Save Record'; ?></button>
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations' ) ); ?>" class="button">Cancel</a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations' ) ); ?>" class="button">Cancel</a>
                 </p>
             </form>
         </div>
@@ -188,9 +188,9 @@ class OCCIPR_Ordination {
         ?>
         <div class="wrap occi-wrap">
             <h1>Ordination Record</h1>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations' ) ); ?>">&larr; Back to Register</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations' ) ); ?>">&larr; Back to Register</a>
             <?php if ( current_user_can( 'occipr_manage_records' ) ) : ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occi-ordinations&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit Record</a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ordinations&action=edit&id=' . $r->id ) ); ?>" class="button button-secondary" style="margin-left:10px">Edit Record</a>
             <?php endif; ?>
             <button onclick="window.print()" class="button" style="margin-left:10px">Print Record</button>
             <?php echo OCCIPR_Certificates::certificate_button( 'ordination', $r->id ); ?>
@@ -205,7 +205,7 @@ class OCCIPR_Ordination {
                 <table class="occi-view-table">
                     <tr>
                         <th>Date of Ordination</th>
-                        <td><?php echo esc_html( occi_format_date( $r->ordination_date ) ); ?></td>
+                        <td><?php echo esc_html( occipr_format_date( $r->ordination_date ) ); ?></td>
                         <th>Rank</th>
                         <td><strong><?php echo esc_html( $r->ordination_rank ); ?></strong></td>
                     </tr>
@@ -246,7 +246,7 @@ class OCCIPR_Ordination {
     }
 
     public static function save() {
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_save_ordination', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_save_ordination', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
         global $wpdb;
@@ -270,18 +270,18 @@ class OCCIPR_Ordination {
         } else {
             $wpdb->insert( "{$wpdb->prefix}occipr_ordinations", $data );
         }
-        wp_redirect( admin_url( 'admin.php?page=occi-ordinations&saved=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-ordinations&saved=1' ) );
         exit;
     }
 
     public static function delete() {
         $id = intval( $_GET['id'] ?? 0 );
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_delete_ordination_' . $id ) ) {
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_delete_ordination_' . $id ) ) {
             wp_die( 'Access denied.' );
         }
         global $wpdb;
         $wpdb->delete( "{$wpdb->prefix}occipr_ordinations", [ 'id' => $id ], [ '%d' ] );
-        wp_redirect( admin_url( 'admin.php?page=occi-ordinations&deleted=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-ordinations&deleted=1' ) );
         exit;
     }
 }

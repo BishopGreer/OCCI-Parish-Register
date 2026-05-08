@@ -10,8 +10,8 @@ class OCCIPR_Certificates {
     const CONTENT_BOTTOM = '7%';    // margin from bottom border
 
     public static function init() {
-        add_action( 'admin_post_occi_print_certificate', [ __CLASS__, 'print_certificate' ] );
-        add_action( 'admin_post_occi_save_cert_settings', [ __CLASS__, 'save_settings' ] );
+        add_action( 'admin_post_occipr_print_certificate', [ __CLASS__, 'print_certificate' ] );
+        add_action( 'admin_post_occipr_save_cert_settings', [ __CLASS__, 'save_settings' ] );
     }
 
     // -------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class OCCIPR_Certificates {
             <h1>Certificate Settings</h1>
             <?php echo $msg; ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                <?php wp_nonce_field( 'occi_save_cert_settings', 'occi_nonce' ); ?>
+                <?php wp_nonce_field( 'occipr_save_cert_settings', 'occipr_nonce' ); ?>
                 <input type="hidden" name="action" value="occi_save_cert_settings">
                 <div class="occi-section">
                     <h2>Certificate Template Image</h2>
@@ -79,7 +79,7 @@ class OCCIPR_Certificates {
         <p class="submit">
                     <button type="submit" class="button button-primary">Save Settings</button>
                     <?php if ( $template_url ) : ?>
-                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occi_save_cert_settings&reset=1' ), 'occi_save_cert_settings', 'occi_nonce' ) ); ?>" class="button">Reset to Default Template</a>
+                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=occipr_save_cert_settings&reset=1' ), 'occipr_save_cert_settings', 'occipr_nonce' ) ); ?>" class="button">Reset to Default Template</a>
                     <?php endif; ?>
                 </p>
             </form>
@@ -101,14 +101,14 @@ class OCCIPR_Certificates {
     }
 
     public static function save_settings() {
-        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occi_save_cert_settings', 'occi_nonce' ) ) { wp_die( 'Access denied.' ); }
+        if ( ! current_user_can( 'occipr_manage_records' ) || ! check_admin_referer( 'occipr_save_cert_settings', 'occipr_nonce' ) ) { wp_die( 'Access denied.' ); }
         if ( isset( $_GET['reset'] ) ) {
             delete_option( 'occi_cert_template_url' );
         } else {
             update_option( 'occi_cert_template_url', esc_url_raw( $_POST['cert_template_url'] ?? '' ) );
             update_option( 'occi_cert_font', sanitize_text_field( $_POST['cert_font'] ?? 'Palatino Linotype' ) );
         }
-        wp_redirect( admin_url( 'admin.php?page=occi-cert-settings&saved=1' ) );
+        wp_redirect( admin_url( 'admin.php?page=occipr-cert-settings&saved=1' ) );
         exit;
     }
 
@@ -138,7 +138,7 @@ class OCCIPR_Certificates {
     // -------------------------------------------------------------------------
 
     public static function print_certificate() {
-        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occi_print_certificate', 'occi_nonce' ) ) {
+        if ( ! current_user_can( 'occipr_view_records' ) || ! check_admin_referer( 'occipr_print_certificate', 'occipr_nonce' ) ) {
             wp_die( 'Access denied.' );
         }
         global $wpdb;
@@ -372,8 +372,8 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
         $name = trim( $r->first_name . ' ' . $r->middle_name . ' ' . strtoupper( $r->last_name ) );
         $location = self::format_location( $r->parish_name, $r->parish_city, $r->parish_state, $r->alt_location );
         $details = [];
-        $details['Date of Baptism']  = occi_format_date( $r->baptism_date );
-        if ( $r->birth_date ) $details['Date of Birth'] = occi_format_date( $r->birth_date );
+        $details['Date of Baptism']  = occipr_format_date( $r->baptism_date );
+        if ( $r->birth_date ) $details['Date of Birth'] = occipr_format_date( $r->birth_date );
         if ( $r->birth_place ) $details['Place of Birth'] = $r->birth_place;
         $father = trim( $r->father_first_name . ' ' . $r->father_middle_name . ' ' . $r->father_last_name );
         $mother = trim( $r->mother_first_name . ' ' . $r->mother_middle_name . ' ' . $r->mother_last_name )
@@ -405,7 +405,7 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
         $name = trim( $r->first_name . ' ' . $r->middle_name . ' ' . strtoupper( $r->last_name ) );
         $location = self::format_location( $r->parish_name, $r->parish_city, $r->parish_state, $r->alt_location );
         $details = [
-            'Date of Confirmation' => occi_format_date( $r->confirmation_date ),
+            'Date of Confirmation' => occipr_format_date( $r->confirmation_date ),
             'Confirming Bishop'    => $r->bishop_name,
             'Parish'               => $location,
         ];
@@ -432,7 +432,7 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
         $name2 = trim( $r->party2_first_name . ' ' . $r->party2_middle_name . ' ' . strtoupper( $r->party2_last_name ) );
         $location = self::format_location( $r->parish_name, $r->parish_city, $r->parish_state, $r->alt_location );
         $details = [
-            'Date of Marriage' => occi_format_date( $r->marriage_date ),
+            'Date of Marriage' => occipr_format_date( $r->marriage_date ),
             'Witness 1'        => $r->witness1_name,
             'Witness 2'        => $r->witness2_name,
             'Minister'         => $r->minister_name,
@@ -457,8 +457,8 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
              WHERE d.id = %d", $id ) );
         if ( ! $r ) return null;
         $name = trim( $r->first_name . ' ' . $r->middle_name . ' ' . strtoupper( $r->last_name ) );
-        $details = [ 'Date of Death' => occi_format_date( $r->death_date ) ];
-        if ( $r->funeral_date ) $details['Date of Funeral']  = occi_format_date( $r->funeral_date );
+        $details = [ 'Date of Death' => occipr_format_date( $r->death_date ) ];
+        if ( $r->funeral_date ) $details['Date of Funeral']  = occipr_format_date( $r->funeral_date );
         if ( $r->funeral_presider ) $details['Presider']     = $r->funeral_presider;
         $burial = implode( ', ', array_filter( [ $r->burial_location, $r->burial_city, $r->burial_state ] ) );
         if ( $burial ) $details['Place of Burial'] = $burial;
@@ -484,8 +484,8 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
              WHERE c.id = %d", $id ) );
         if ( ! $r ) return null;
         $name = trim( $r->first_name . ' ' . $r->middle_name . ' ' . strtoupper( $r->last_name ) );
-        $details = [ 'Date of Reception' => occi_format_date( $r->communion_date ) ];
-        if ( $r->baptism_date )   $details['Date of Baptism']   = occi_format_date( $r->baptism_date );
+        $details = [ 'Date of Reception' => occipr_format_date( $r->communion_date ) ];
+        if ( $r->baptism_date )   $details['Date of Baptism']   = occipr_format_date( $r->baptism_date );
         if ( $r->baptism_church ) $details['Church of Baptism'] = implode( ', ', array_filter( [ $r->baptism_church, $r->baptism_city, $r->baptism_state ] ) );
         $details['Presider'] = $r->presider;
         $details['Parish']   = self::format_location( $r->parish_name, $r->parish_city, $r->parish_state, '' );
@@ -510,7 +510,7 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
         $name = trim( $r->first_name . ' ' . $r->middle_name . ' ' . strtoupper( $r->last_name ) );
         $location = self::format_location( $r->parish_name, $r->parish_city, $r->parish_state, $r->alt_location );
         $details = [
-            'Date of Ordination' => occi_format_date( $r->ordination_date ),
+            'Date of Ordination' => occipr_format_date( $r->ordination_date ),
             'Rank'               => $r->ordination_rank,
             'Presiding Bishop'   => $r->presiding_bishop,
         ];
@@ -544,9 +544,9 @@ body { font-family: '<?php echo esc_js( $font ); ?>', Palatino, 'Book Antiqua', 
 
     public static function certificate_button( $type, $id ) {
         $url = wp_nonce_url(
-            admin_url( 'admin-post.php?action=occi_print_certificate&type=' . $type . '&id=' . $id ),
-            'occi_print_certificate',
-            'occi_nonce'
+            admin_url( 'admin-post.php?action=occipr_print_certificate&type=' . $type . '&id=' . $id ),
+            'occipr_print_certificate',
+            'occipr_nonce'
         );
         return '<a href="' . esc_url( $url ) . '" target="_blank" class="button button-primary occi-cert-btn">&#127881; Print Certificate</a>';
     }

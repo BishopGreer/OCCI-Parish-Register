@@ -233,7 +233,7 @@
 }
 
 /* Admin footer bar */
-.occi-admin-footer {
+.occipr-admin-footer {
     position: fixed;
     bottom: 0;
     left: 160px; /* clear the WP sidebar */
@@ -249,11 +249,220 @@
     z-index: 100;
     font-style: italic;
 }
-.occi-admin-footer span:last-child {
+.occipr-admin-footer span:last-child {
     color: var(--occi-gold);
     font-weight: 600;
 }
 /* Collapsed sidebar */
-.folded .occi-admin-footer { left: 36px; }
-@media (max-width: 782px) { .occi-admin-footer { left: 0; } }
-@media print { .occi-admin-footer { display: none !important; } }
+.folded .occipr-admin-footer { left: 36px; }
+@media (max-width: 782px) { .occipr-admin-footer { left: 0; } }
+@media print { .occipr-admin-footer { display: none !important; } }
+
+/* ------------------------------------------------------------------ */
+/* Parish Directory                                                     */
+/* ------------------------------------------------------------------ */
+
+/* Two-column form layout for directory forms */
+.occi-form-columns {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+.occi-form-col-main { flex: 2; min-width: 0; }
+.occi-form-col-side { flex: 0 0 260px; }
+
+/* Household detail */
+.occi-household-detail { margin-bottom: 8px; }
+.occi-household-photo { margin-bottom: 16px; }
+.occi-household-photo img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    display: block;
+}
+
+/* Members grid on detail page */
+.occi-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+.occi-member-card {
+    background: #fff;
+    border: 1px solid #e0d0a0;
+    border-top: 3px solid var(--occi-burgundy);
+    border-radius: 4px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+.occi-member-photo img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: block;
+}
+.occi-member-body { flex: 1; min-width: 0; }
+.occi-member-name {
+    font-weight: 700;
+    font-size: 1em;
+    color: var(--occi-dark);
+    margin-bottom: 2px;
+}
+.occi-legal-name {
+    font-weight: 400;
+    font-size: 0.82em;
+    color: #888;
+    margin-left: 4px;
+}
+.occi-member-role {
+    font-size: 0.85em;
+    color: var(--occi-burgundy);
+    font-variant: small-caps;
+    margin-bottom: 4px;
+}
+.occi-member-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Photo uploader widget */
+.occi-photo-uploader { margin-top: 4px; }
+
+/* Meta / side boxes */
+.occi-form-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: 3px solid var(--occi-gold);
+    padding: 16px;
+    border-radius: 3px;
+}
+.occi-form-box h2 {
+    margin-top: 0;
+    font-size: 1em;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--occi-burgundy);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+}
+.occi-form-box p.description { font-size: 0.85em; margin-bottom: 10px; }
+.occi-form-box label { display: block; margin-bottom: 4px; font-size: 0.9em; }
+
+/* Responsive collapse */
+@media (max-width: 960px) {
+    .occi-form-columns { flex-direction: column; }
+    .occi-form-col-side { flex: none; width: 100%; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Mass Attendance                                                      */
+/* ------------------------------------------------------------------ */
+
+.occi-attendance-summary {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 16px 0 20px;
+}
+.occi-att-stat {
+    background: #fff;
+    border: 1px solid #e0d0a0;
+    border-top: 3px solid var(--occi-burgundy);
+    border-radius: 4px;
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 130px;
+}
+.occi-att-num {
+    display: block;
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--occi-burgundy);
+    line-height: 1;
+}
+.occi-att-lbl {
+    display: block;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 4px;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Parish Reports                                                       */
+/* ------------------------------------------------------------------ */
+
+.occi-report-tabs { margin-top: 12px; }
+
+.occi-report-output {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-top: 16px;
+    max-width: 960px;
+}
+.occi-report-header {
+    text-align: center;
+    border-bottom: 2px solid var(--occi-gold);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+.occi-report-header h2 {
+    color: var(--occi-burgundy);
+    font-size: 1.3em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.occi-report-header p { margin: 2px 0; color: #555; font-size: 0.95em; }
+.occi-report-period { font-style: italic; color: #888 !important; }
+
+.occi-report-section-title {
+    font-size: 1em;
+    font-variant: small-caps;
+    letter-spacing: 0.06em;
+    color: var(--occi-burgundy);
+    border-bottom: 1px solid #e0d0a0;
+    padding-bottom: 4px;
+    margin: 24px 0 10px;
+}
+.occi-report-table { margin-bottom: 8px; }
+.occi-report-table th,
+.occi-report-table td { padding: 7px 12px; font-size: 0.9em; }
+.occi-report-table th.num,
+.occi-report-table td.num { text-align: right; }
+.occi-report-table tfoot th { background: var(--occi-light-bg); font-weight: 700; }
+.occi-report-total-row th,
+.occi-report-total-row td { border-top: 2px solid var(--occi-gold); font-weight: 700; }
+
+.occi-report-summary { margin-bottom: 4px; }
+.occi-report-generated {
+    text-align: right;
+    font-size: 0.8em;
+    color: #aaa;
+    font-style: italic;
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+/* Print: reports */
+@media print {
+    .occi-report-tabs, .occi-search-form, .occi-report-output + .button,
+    button.button, a.button { display: none !important; }
+    .occi-report-output { border: none; padding: 0; max-width: 100%; }
+    .occi-report-table { font-size: 0.85em; }
+    body { font-family: "Times New Roman", serif; }
+}
