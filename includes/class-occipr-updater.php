@@ -14,6 +14,7 @@ class OCCIPR_Updater {
         add_filter( 'pre_set_site_transient_update_plugins', [ $instance, 'check_for_update' ] );
         add_filter( 'plugins_api',                           [ $instance, 'plugin_info' ], 20, 3 );
         add_filter( 'upgrader_source_selection',             [ $instance, 'fix_directory_name' ], 10, 4 );
+        add_action( 'admin_init',                            [ __CLASS__, 'maybe_clear_cache' ] );
     }
 
     public function check_for_update( $transient ) {
@@ -74,16 +75,35 @@ class OCCIPR_Updater {
     }
 
     public function fix_directory_name( $source, $remote_source, $upgrader, $hook_extra = [] ) {
-        if ( ! isset( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== self::PLUGIN_SLUG ) {
+        // Only act on our plugin -- either during automatic update or manual upload.
+        $is_our_update  = isset( $hook_extra['plugin'] ) && $hook_extra['plugin'] === self::PLUGIN_SLUG;
+        $is_our_install = isset( $hook_extra['action'] ) && $hook_extra['action'] === 'install';
+
+        // During an automatic update the plugin key is set; during manual upload it is not.
+        // Either way, check whether the extracted folder contains our main plugin file.
+        if ( ! $is_our_update && ! $is_our_install ) {
             return $source;
         }
+
         global $wp_filesystem;
+
+        // If the source already has the right name, nothing to do.
         $correct = trailingslashit( $remote_source ) . self::PLUGIN_BASE . '/';
-        if ( $source !== $correct && $wp_filesystem->is_dir( $source ) ) {
+        if ( $source === $correct ) {
+            return $source;
+        }
+
+        // Only rename if our main plugin file is inside the extracted source folder.
+        if ( ! $wp_filesystem->exists( trailingslashit( $source ) . 'occi-parish-register.php' ) ) {
+            return $source;
+        }
+
+        if ( $wp_filesystem->is_dir( $source ) && ! $wp_filesystem->is_dir( $correct ) ) {
             if ( $wp_filesystem->move( $source, $correct ) ) {
                 return $correct;
             }
         }
+
         return $source;
     }
 

@@ -4,7 +4,7 @@ Tags: sacramental records, church, old catholic, database, baptism, marriage, or
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.0.12
+Stable tag: 2.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,13 @@ Each household must have a parish selected before it will appear in the director
 Records are matched by name plus sacrament date. Baptisms additionally use date of birth when present, so two people with the same name but different birth dates are never treated as the same individual. Existing records are skipped; new records for known individuals are added normally. Parishes are matched by name, city, and state and created automatically if not found.
 
 == Changelog ==
+
+= 2.0.0 =
+* Fixed automatic update detection: plugin now correctly appears in WordPress Dashboard > Updates when a new version is available on GitHub
+* Fixed manual ZIP upload: the release ZIP now contains the correct occi-parish-register/ parent folder so uploading via Plugins > Add New > Upload updates the existing plugin instead of installing a duplicate
+* Fixed release workflow to include the public/ directory (registration form CSS was missing from distributed ZIPs since 1.0.11)
+* Fixed Force Update Check button on Certificate Settings: the cache-clearing handler is now properly hooked to admin_init so the button actually works
+* Improved fix_directory_name filter: more robustly handles both automatic updates and manual uploads; verifies the main plugin file exists before renaming the extracted folder
 
 = 1.0.12 =
 * Increased spacing on public registration forms: more padding inside each section, larger gap between fields and grid columns, more breathing room inside repeating member rows

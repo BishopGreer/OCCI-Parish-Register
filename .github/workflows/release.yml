@@ -19,9 +19,15 @@ jobs:
 
       - name: Build plugin ZIP
         run: |
-          zip -r occi-parish-register-${{ steps.version.outputs.VERSION }}.zip \
-            occi-parish-register.php readme.txt admin assets includes \
-            --exclude "*.DS_Store" --exclude "*.git*"
+          # Stage files inside a folder named exactly occi-parish-register/
+          # so WordPress recognises the ZIP as an update to the existing plugin.
+          mkdir -p /tmp/build/occi-parish-register
+          cp -r occi-parish-register.php readme.txt admin assets includes public \
+            /tmp/build/occi-parish-register/
+          cd /tmp/build
+          zip -r $GITHUB_WORKSPACE/occi-parish-register-${{ steps.version.outputs.VERSION }}.zip \
+            occi-parish-register \
+            --exclude "*.DS_Store"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
