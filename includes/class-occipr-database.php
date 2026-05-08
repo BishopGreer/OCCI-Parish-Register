@@ -308,6 +308,50 @@ class OCCIPR_Database {
             KEY parish_id (parish_id)
         ) $charset;" );
 
+        // PSR (Parish School of Religion / Religious Education)
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_psr (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            first_name varchar(100) NOT NULL,
+            preferred_name varchar(100) DEFAULT NULL,
+            middle_name varchar(100) DEFAULT NULL,
+            last_name varchar(100) NOT NULL,
+            birth_date date DEFAULT NULL,
+            grade_level varchar(20) DEFAULT NULL,
+            academic_year varchar(10) DEFAULT NULL,
+            enrollment_date date DEFAULT NULL,
+            catechist varchar(255) DEFAULT NULL,
+            class_group varchar(100) DEFAULT NULL,
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            status varchar(20) NOT NULL DEFAULT 'active',
+            guardian1_name varchar(200) DEFAULT NULL,
+            guardian1_phone varchar(30) DEFAULT NULL,
+            guardian1_email varchar(150) DEFAULT NULL,
+            guardian2_name varchar(200) DEFAULT NULL,
+            guardian2_phone varchar(30) DEFAULT NULL,
+            guardian2_email varchar(150) DEFAULT NULL,
+            home_address text DEFAULT NULL,
+            is_baptized tinyint(1) NOT NULL DEFAULT 0,
+            baptism_date date DEFAULT NULL,
+            baptism_church varchar(255) DEFAULT NULL,
+            baptism_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            received_first_communion tinyint(1) NOT NULL DEFAULT 0,
+            communion_date date DEFAULT NULL,
+            communion_church varchar(255) DEFAULT NULL,
+            communion_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            is_confirmed tinyint(1) NOT NULL DEFAULT 0,
+            confirmation_date date DEFAULT NULL,
+            confirmation_church varchar(255) DEFAULT NULL,
+            confirmation_record_id bigint(20) UNSIGNED DEFAULT NULL,
+            notes text DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY last_name (last_name(50)),
+            KEY status (status),
+            KEY parish_id (parish_id),
+            KEY academic_year (academic_year)
+        ) $charset;" );
+
         // OCIA (Order of Christian Initiation of Adults)
         dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_ocia (
             id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,

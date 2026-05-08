@@ -17,6 +17,9 @@ class OCCIPR_ParishReports {
             case 'ocia':
                 self::ocia_report();
                 break;
+            case 'psr':
+                self::psr_report();
+                break;
             default:
                 self::attendance_report();
         }
@@ -31,6 +34,7 @@ class OCCIPR_ParishReports {
             'attendance' => 'Sunday Attendance',
             'donations'  => 'Donations',
             'ocia'       => 'OCIA',
+            'psr'        => 'PSR / Rel. Ed.',
         ];
         echo '<nav class="nav-tab-wrapper occi-report-tabs">';
         foreach ( $tabs as $key => $label ) {
@@ -910,6 +914,288 @@ class OCCIPR_ParishReports {
                         </tbody>
                     </table>
                     <?php endif; ?>
+
+                    <p class="occi-report-generated">Report generated <?php echo date( 'F j, Y \a\t g:i A' ); ?></p>
+                </div><!-- .occi-report-output -->
+
+                <?php endif; // records
+            endif; // generated ?>
+        </div>
+        <?php
+    }
+
+    // -------------------------------------------------------------------------
+    // PSR REPORT
+    // -------------------------------------------------------------------------
+
+    private static function psr_report(): void {
+        global $wpdb;
+
+        $parishes     = OCCIPR_Database::get_parishes();
+        $statuses     = OCCIPR_PSR::status_options();
+        $grade_opts   = OCCIPR_PSR::grade_options();
+
+        // Available academic years
+        $years = $wpdb->get_col(
+            "SELECT DISTINCT academic_year FROM {$wpdb->prefix}occipr_psr WHERE academic_year IS NOT NULL AND academic_year != '' ORDER BY academic_year DESC"
+        );
+
+        // Filters
+        $parish_filter = absint( $_GET['parish_id'] ?? 0 );
+        $status_filter = sanitize_key( $_GET['status'] ?? '' );
+        $year_filter   = sanitize_text_field( $_GET['academic_year'] ?? '' );
+        $grade_filter  = sanitize_text_field( $_GET['grade_level'] ?? '' );
+        $generated     = isset( $_GET['run'] );
+
+        $where = 'WHERE 1=1';
+        $args  = [];
+        if ( $parish_filter ) { $where .= ' AND s.parish_id = %d';      $args[] = $parish_filter; }
+        if ( $status_filter ) { $where .= ' AND s.status = %s';          $args[] = $status_filter; }
+        if ( $year_filter )   { $where .= ' AND s.academic_year = %s';  $args[] = $year_filter; }
+        if ( $grade_filter )  { $where .= ' AND s.grade_level = %s';    $args[] = $grade_filter; }
+
+        ?>
+        <div class="wrap occi-wrap">
+            <h1><span class="dashicons dashicons-chart-bar"></span> Parish Reports</h1>
+            <?php self::tab_nav( 'psr' ); ?>
+            <hr class="wp-header-end">
+
+            <!-- Filters -->
+            <form method="get" class="occi-search-form" style="margin-top:16px;">
+                <input type="hidden" name="page"   value="occipr-parish-reports">
+                <input type="hidden" name="report" value="psr">
+                <?php if ( count( $parishes ) > 1 ) : ?>
+                <select name="parish_id">
+                    <option value="">All Parishes</option>
+                    <?php foreach ( $parishes as $p ) : ?>
+                    <option value="<?php echo esc_attr( $p->id ); ?>"<?php selected( $parish_filter, $p->id ); ?>><?php echo esc_html( $p->name ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <?php endif; ?>
+                <select name="status">
+                    <option value="">All Statuses</option>
+                    <?php foreach ( $statuses as $val => $label ) : ?>
+                    <option value="<?php echo esc_attr( $val ); ?>"<?php selected( $status_filter, $val ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select name="academic_year">
+                    <option value="">All Years</option>
+                    <?php foreach ( $years as $y ) : ?>
+                    <option value="<?php echo esc_attr( $y ); ?>"<?php selected( $year_filter, $y ); ?>><?php echo esc_html( $y ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select name="grade_level">
+                    <option value="">All Grades</option>
+                    <?php foreach ( $grade_opts as $val => $label ) : ?>
+                    <option value="<?php echo esc_attr( $val ); ?>"<?php selected( $grade_filter, $val ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="hidden" name="run" value="1">
+                <button type="submit" class="button button-primary">Generate Report</button>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-parish-reports&report=psr' ) ); ?>" class="button">Reset</a>
+            </form>
+
+            <?php if ( ! $generated ) : ?>
+            <p style="margin-top:20px; color:#666; font-style:italic;">Select filters above and click Generate Report.</p>
+            <?php else :
+
+                $sql = "SELECT s.*, p.name AS parish_name
+                        FROM {$wpdb->prefix}occipr_psr s
+                        LEFT JOIN {$wpdb->prefix}occipr_parishes p ON p.id = s.parish_id
+                        $where
+                        ORDER BY s.grade_level ASC, s.last_name ASC, s.first_name ASC";
+                $records = $args
+                    ? $wpdb->get_results( $wpdb->prepare( $sql, ...$args ) )
+                    : $wpdb->get_results( $sql );
+
+                if ( ! $records ) : ?>
+                <p style="margin-top:20px;">No PSR records found for the selected filters.</p>
+                <?php else :
+
+                    // Summary counts
+                    $total          = count( $records );
+                    $count_active   = count( array_filter( $records, fn( $r ) => $r->status === 'active' ) );
+                    $count_baptized = count( array_filter( $records, fn( $r ) => $r->is_baptized ) );
+                    $count_communion= count( array_filter( $records, fn( $r ) => $r->received_first_communion ) );
+                    $count_confirmed= count( array_filter( $records, fn( $r ) => $r->is_confirmed ) );
+
+                    // By grade
+                    $by_grade = [];
+                    foreach ( $records as $r ) {
+                        $g = $r->grade_level ?: 'Unspecified';
+                        if ( ! isset( $by_grade[ $g ] ) ) {
+                            $by_grade[ $g ] = [ 'total' => 0, 'baptized' => 0, 'communion' => 0, 'confirmed' => 0 ];
+                        }
+                        $by_grade[ $g ]['total']++;
+                        if ( $r->is_baptized )             $by_grade[ $g ]['baptized']++;
+                        if ( $r->received_first_communion ) $by_grade[ $g ]['communion']++;
+                        if ( $r->is_confirmed )             $by_grade[ $g ]['confirmed']++;
+                    }
+
+                    // By catechist
+                    $by_catechist = [];
+                    foreach ( $records as $r ) {
+                        $cat = $r->catechist ?: 'Unassigned';
+                        if ( ! isset( $by_catechist[ $cat ] ) ) { $by_catechist[ $cat ] = 0; }
+                        $by_catechist[ $cat ]++;
+                    }
+                    arsort( $by_catechist );
+
+                    // Report header text
+                    $parish_name = '';
+                    if ( $parish_filter ) {
+                        foreach ( $parishes as $p ) {
+                            if ( $p->id == $parish_filter ) { $parish_name = $p->name; break; }
+                        }
+                    }
+                ?>
+                <!-- Print button -->
+                <div style="margin-top:16px; margin-bottom:8px;">
+                    <button class="button button-secondary" onclick="window.print()">&#128438; Print Report</button>
+                </div>
+
+                <div class="occi-report-output">
+                    <div class="occi-report-header">
+                        <h2>PSR / Religious Education Report</h2>
+                        <?php if ( $parish_name ) : ?><p><?php echo esc_html( $parish_name ); ?></p><?php endif; ?>
+                        <?php if ( $year_filter ) : ?>
+                        <p class="occi-report-period">Academic Year: <?php echo esc_html( $year_filter ); ?></p>
+                        <?php endif; ?>
+                        <?php if ( $status_filter ) : ?>
+                        <p class="occi-report-period">Status: <?php echo esc_html( $statuses[ $status_filter ] ?? $status_filter ); ?></p>
+                        <?php endif; ?>
+                        <?php if ( $grade_filter ) : ?>
+                        <p class="occi-report-period">Grade: <?php echo esc_html( $grade_opts[ $grade_filter ] ?? $grade_filter ); ?></p>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Summary bar -->
+                    <div class="occi-attendance-summary occi-report-summary">
+                        <div class="occi-att-stat">
+                            <span class="occi-att-num"><?php echo $total; ?></span>
+                            <span class="occi-att-lbl">Total Students</span>
+                        </div>
+                        <div class="occi-att-stat">
+                            <span class="occi-att-num"><?php echo $count_active; ?></span>
+                            <span class="occi-att-lbl">Active</span>
+                        </div>
+                        <div class="occi-att-stat">
+                            <span class="occi-att-num"><?php echo $count_baptized; ?></span>
+                            <span class="occi-att-lbl">Baptized</span>
+                        </div>
+                        <div class="occi-att-stat">
+                            <span class="occi-att-num"><?php echo $count_communion; ?></span>
+                            <span class="occi-att-lbl">First Communion</span>
+                        </div>
+                        <div class="occi-att-stat">
+                            <span class="occi-att-num"><?php echo $count_confirmed; ?></span>
+                            <span class="occi-att-lbl">Confirmed</span>
+                        </div>
+                    </div>
+
+                    <!-- By grade breakdown -->
+                    <?php if ( ! $grade_filter ) : ?>
+                    <h3 class="occi-report-section-title">Enrollment by Grade</h3>
+                    <table class="widefat striped occi-report-table">
+                        <thead>
+                            <tr>
+                                <th>Grade / Level</th>
+                                <th class="num">Students</th>
+                                <th class="num">Baptized</th>
+                                <th class="num">First Communion</th>
+                                <th class="num">Confirmed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $by_grade as $grade => $g ) : ?>
+                            <tr>
+                                <td><strong><?php echo esc_html( $grade_opts[ $grade ] ?? $grade ); ?></strong></td>
+                                <td class="num"><?php echo $g['total']; ?></td>
+                                <td class="num"><?php echo $g['baptized']; ?></td>
+                                <td class="num"><?php echo $g['communion']; ?></td>
+                                <td class="num"><?php echo $g['confirmed']; ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr class="occi-report-total-row">
+                                <th>Total</th>
+                                <th class="num"><?php echo $total; ?></th>
+                                <th class="num"><?php echo $count_baptized; ?></th>
+                                <th class="num"><?php echo $count_communion; ?></th>
+                                <th class="num"><?php echo $count_confirmed; ?></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <?php endif; ?>
+
+                    <!-- By catechist -->
+                    <h3 class="occi-report-section-title">Students by Catechist</h3>
+                    <table class="widefat striped occi-report-table">
+                        <thead>
+                            <tr>
+                                <th>Catechist / Teacher</th>
+                                <th class="num">Students</th>
+                                <th class="num">% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $by_catechist as $cat => $cnt ) : ?>
+                            <tr>
+                                <td><?php echo esc_html( $cat ); ?></td>
+                                <td class="num"><?php echo $cnt; ?></td>
+                                <td class="num"><?php echo $total ? round( $cnt / $total * 100 ) . '%' : '--'; ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr class="occi-report-total-row">
+                                <th>Total</th>
+                                <th class="num"><?php echo $total; ?></th>
+                                <th class="num">100%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Full student roster -->
+                    <h3 class="occi-report-section-title">Student Roster</h3>
+                    <table class="widefat striped occi-report-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Year</th>
+                                <th>Status</th>
+                                <th>Guardian</th>
+                                <th>Catechist</th>
+                                <th class="num">Bapt.</th>
+                                <th class="num">1st Com.</th>
+                                <th class="num">Conf.</th>
+                                <?php if ( ! $parish_filter && count( $parishes ) > 1 ) : ?><th>Parish</th><?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $records as $r ) : ?>
+                            <tr>
+                                <td><strong><?php echo esc_html( $r->last_name . ', ' . ( $r->preferred_name ?: $r->first_name ) ); ?></strong></td>
+                                <td><?php echo esc_html( $grade_opts[ $r->grade_level ] ?? $r->grade_level ?? '' ); ?></td>
+                                <td class="occi-small"><?php echo esc_html( $r->academic_year ?? '' ); ?></td>
+                                <td><?php echo OCCIPR_PSR::status_badge( $r->status ); ?></td>
+                                <td class="occi-small">
+                                    <?php echo esc_html( $r->guardian1_name ?? '' ); ?>
+                                    <?php if ( $r->guardian1_phone ) echo '<br>' . esc_html( $r->guardian1_phone ); ?>
+                                </td>
+                                <td class="occi-small"><?php echo esc_html( $r->catechist ?? '' ); ?></td>
+                                <td class="num"><?php echo $r->is_baptized ? '&#10003;' : ''; ?></td>
+                                <td class="num"><?php echo $r->received_first_communion ? '&#10003;' : ''; ?></td>
+                                <td class="num"><?php echo $r->is_confirmed ? '&#10003;' : ''; ?></td>
+                                <?php if ( ! $parish_filter && count( $parishes ) > 1 ) : ?>
+                                <td class="occi-small"><?php echo esc_html( $r->parish_name ?? '' ); ?></td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
                     <p class="occi-report-generated">Report generated <?php echo date( 'F j, Y \a\t g:i A' ); ?></p>
                 </div><!-- .occi-report-output -->

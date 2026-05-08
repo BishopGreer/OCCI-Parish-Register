@@ -30,6 +30,7 @@ class OCCIPR_Admin {
         add_submenu_page( 'occi-parish-register', 'Mass Attendance',     'Mass Attendance',     'occipr_view_records',   'occipr-attendance',          [ 'OCCIPR_Attendance', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Donations',           'Donations',           'occipr_view_records',   'occipr-donations',           [ 'OCCIPR_Donations', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'OCIA',                'OCIA',                'occipr_view_records',   'occipr-ocia',                [ 'OCCIPR_OCIA', 'page' ] );
+        add_submenu_page( 'occi-parish-register', 'PSR / Rel. Ed.',       'PSR / Rel. Ed.',       'occipr_view_records',   'occipr-psr',                 [ 'OCCIPR_PSR', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Parish Reports',      'Parish Reports',      'occipr_view_records',   'occipr-parish-reports',      [ 'OCCIPR_ParishReports', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Import / Export',      'Import / Export',      'occipr_view_records',   'occipr-import-export',       [ 'OCCIPR_ImportExport', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Person Report',      'Person Report',      'occipr_view_records',   'occipr-report',              [ 'OCCIPR_Report', 'page' ] );
@@ -42,7 +43,7 @@ class OCCIPR_Admin {
         $pr_pages = [
             'occi-parish-register', 'occipr-baptisms', 'occipr-confirmations',
             'occipr-marriages', 'occipr-deaths', 'occipr-communions', 'occipr-ordinations',
-            'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
+            'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-psr', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
             'occipr-parishes', 'occipr-cert-settings',
         ];
         if ( ! in_array( $page, $pr_pages, true ) ) return;
@@ -82,6 +83,7 @@ class OCCIPR_Admin {
             "SELECT SUM(amount) FROM {$wpdb->prefix}occipr_donations WHERE YEAR(donation_date) = %d", $year
         ) );
         $ocia_active = OCCIPR_OCIA::active_count();
+        $psr_active  = OCCIPR_PSR::active_count();
         ?>
         <div class="wrap occi-wrap">
             <h1><span class="dashicons dashicons-book-alt"></span> OCCI Parish Register</h1>
@@ -122,6 +124,14 @@ class OCCIPR_Admin {
                     <div class="occi-small" style="margin-bottom:8px;">Inquirers, Catechumens &amp; Elect</div>
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-ocia' ) ); ?>" class="button button-primary">View OCIA</a>
                 </div>
+
+                <!-- PSR stat card -->
+                <div class="occi-stat-card">
+                    <div class="occi-stat-number"><?php echo $psr_active; ?></div>
+                    <div class="occi-stat-label">PSR Students</div>
+                    <div class="occi-small" style="margin-bottom:8px;">Currently Active</div>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-psr' ) ); ?>" class="button button-primary">View PSR</a>
+                </div>
             </div>
             <div class="occi-dashboard-tools">
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-report' ) ); ?>" class="button button-secondary occi-tool-btn">&#128269; Person Report</a>
@@ -140,7 +150,7 @@ class OCCIPR_Admin {
         $pr_pages = [
             'occi-parish-register', 'occipr-baptisms', 'occipr-confirmations',
             'occipr-marriages', 'occipr-deaths', 'occipr-communions', 'occipr-ordinations',
-            'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
+            'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-psr', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
             'occipr-parishes', 'occipr-cert-settings',
         ];
         if ( ! in_array( $page, $pr_pages, true ) ) return;

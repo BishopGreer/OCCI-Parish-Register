@@ -4,7 +4,7 @@ Tags: sacramental records, church, old catholic, database, baptism, marriage, or
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,18 @@ Each household must have a parish selected before it will appear in the director
 Records are matched by name plus sacrament date. Baptisms additionally use date of birth when present, so two people with the same name but different birth dates are never treated as the same individual. Existing records are skipped; new records for known individuals are added normally. Parishes are matched by name, city, and state and created automatically if not found.
 
 == Changelog ==
+
+= 1.0.10 =
+* Added PSR (Parish School of Religion / Religious Education) module
+* Track students from enrollment through program completion with grade level, academic year, class group, and catechist assignment
+* Parent and guardian fields: two guardian entries (name, phone, email) and a home address field
+* Three sacramental status toggles -- Baptized, First Communion, Confirmed -- each with date, church, and optional link to an existing register record
+* Detail view shows full sacramental status with links to linked register records
+* Overview bar on list page: active, completed, withdrawn, and total counts
+* Filter list by parish, status, academic year, and grade level; defaults to Active students
+* Dashboard stat card shows currently active PSR students
+* PSR report tab in Parish Reports: summary bar (total, active, baptized, communion, confirmed); enrollment by grade with sacramental status counts; student count by catechist with percentage; full printable student roster with checkmarks for each sacrament received; filterable by parish, status, academic year, and grade
+* New database table: occipr_psr
 
 = 1.0.9 =
 * Added OCIA (Order of Christian Initiation of Adults) module
