@@ -1,0 +1,262 @@
+/* OCCI Parish Register — Public Registration Forms
+   All rules scoped to .occipr-registration-form to avoid theme conflicts. */
+
+/* ============================================================
+   Container & Layout
+   ============================================================ */
+.occipr-registration-form {
+    max-width: 780px;
+    margin: 0 auto;
+    font-family: inherit;
+    color: inherit;
+    line-height: 1.6;
+}
+
+.occipr-section {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+}
+
+.occipr-section h3 {
+    margin: 0 0 18px 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-bottom: 2px solid #c8a84b;
+    padding-bottom: 8px;
+    color: #333;
+}
+
+/* ============================================================
+   Fields
+   ============================================================ */
+.occipr-field {
+    margin-bottom: 16px;
+}
+
+.occipr-field:last-child {
+    margin-bottom: 0;
+}
+
+.occipr-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    color: #444;
+}
+
+.occipr-req {
+    color: #c0392b;
+    margin-left: 2px;
+}
+
+.occipr-help {
+    display: block;
+    font-size: 0.82em;
+    color: #666;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+.occipr-input,
+.occipr-select,
+.occipr-textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.occipr-input:focus,
+.occipr-select:focus,
+.occipr-textarea:focus {
+    border-color: #c8a84b;
+    outline: 2px solid rgba(200, 168, 75, 0.25);
+}
+
+.occipr-textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.occipr-select {
+    appearance: auto;
+}
+
+/* ============================================================
+   Grid rows
+   ============================================================ */
+.occipr-row-2,
+.occipr-row-3 {
+    display: grid;
+    gap: 16px;
+}
+
+.occipr-row-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.occipr-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* ============================================================
+   Repeating member rows (parish member form)
+   ============================================================ */
+.occipr-member-row {
+    background: #fff;
+    border: 1px solid #d5d5d5;
+    border-radius: 5px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    position: relative;
+}
+
+.occipr-member-row h4 {
+    margin: 0 0 14px 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #555;
+}
+
+.occipr-remove-row {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-size: 0.8em;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.occipr-remove-row:hover {
+    background: #c0392b;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.occipr-btn-add {
+    display: inline-block;
+    background: #fff;
+    color: #c8a84b;
+    border: 2px solid #c8a84b;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.occipr-btn-add:hover {
+    background: #c8a84b;
+    color: #fff;
+}
+
+/* ============================================================
+   Submit area
+   ============================================================ */
+.occipr-submit-wrap {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.occipr-btn-primary {
+    display: inline-block;
+    background: #2c5282;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 13px 40px;
+    font-size: 1.05em;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.15s ease;
+}
+
+.occipr-btn-primary:hover {
+    background: #1a3a5c;
+}
+
+.occipr-submit-note {
+    display: block;
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 8px;
+}
+
+/* ============================================================
+   Checkbox rows
+   ============================================================ */
+.occipr-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+.occipr-check input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: #c8a84b;
+}
+
+/* ============================================================
+   Messages (success / error)
+   ============================================================ */
+.occipr-message {
+    padding: 16px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+.occipr-success {
+    background: #eaf7ee;
+    border: 1px solid #6abf7b;
+    color: #2d6a3f;
+}
+
+.occipr-error {
+    background: #fdf0ef;
+    border: 1px solid #e08080;
+    color: #7a2020;
+}
+
+/* ============================================================
+   Responsive — stack on mobile
+   ============================================================ */
+@media (max-width: 640px) {
+    .occipr-row-2,
+    .occipr-row-3 {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .occipr-section {
+        padding: 18px 16px;
+    }
+
+    .occipr-btn-primary {
+        width: 100%;
+        padding: 14px 20px;
+    }
+}

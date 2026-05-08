@@ -32,9 +32,11 @@ class OCCIPR_Admin {
         add_submenu_page( 'occi-parish-register', 'OCIA',                'OCIA',                'occipr_view_records',   'occipr-ocia',                [ 'OCCIPR_OCIA', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'PSR / Rel. Ed.',       'PSR / Rel. Ed.',       'occipr_view_records',   'occipr-psr',                 [ 'OCCIPR_PSR', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Parish Reports',      'Parish Reports',      'occipr_view_records',   'occipr-parish-reports',      [ 'OCCIPR_ParishReports', 'page' ] );
+        add_submenu_page( 'occi-parish-register', 'Online Registrations', 'Online Registrations', 'occipr_view_records',   'occipr-registration-queue',  [ 'OCCIPR_Registration', 'queue_page' ] );
         add_submenu_page( 'occi-parish-register', 'Import / Export',      'Import / Export',      'occipr_view_records',   'occipr-import-export',       [ 'OCCIPR_ImportExport', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Person Report',      'Person Report',      'occipr_view_records',   'occipr-report',              [ 'OCCIPR_Report', 'page' ] );
         add_submenu_page( 'occi-parish-register', 'Parishes',           'Parishes',           'occipr_manage_records', 'occipr-parishes',          [ 'OCCIPR_Parishes', 'page' ] );
+        add_submenu_page( 'occi-parish-register', 'Reg. Settings',        'Reg. Settings',        'occipr_manage_records', 'occipr-registration-settings', [ 'OCCIPR_Registration', 'settings_page' ] );
         add_submenu_page( 'occi-parish-register', 'Certificate Settings','Certificate Settings','occipr_manage_records','occipr-cert-settings',      [ 'OCCIPR_Certificates', 'settings_page' ] );
     }
 
@@ -44,6 +46,7 @@ class OCCIPR_Admin {
             'occi-parish-register', 'occipr-baptisms', 'occipr-confirmations',
             'occipr-marriages', 'occipr-deaths', 'occipr-communions', 'occipr-ordinations',
             'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-psr', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
+            'occipr-registration-queue', 'occipr-registration-settings',
             'occipr-parishes', 'occipr-cert-settings',
         ];
         if ( ! in_array( $page, $pr_pages, true ) ) return;
@@ -82,8 +85,9 @@ class OCCIPR_Admin {
         $don_total = (float) $wpdb->get_var( $wpdb->prepare(
             "SELECT SUM(amount) FROM {$wpdb->prefix}occipr_donations WHERE YEAR(donation_date) = %d", $year
         ) );
-        $ocia_active = OCCIPR_OCIA::active_count();
-        $psr_active  = OCCIPR_PSR::active_count();
+        $ocia_active      = OCCIPR_OCIA::active_count();
+        $psr_active       = OCCIPR_PSR::active_count();
+        $pending_reg      = OCCIPR_Registration::pending_count();
         ?>
         <div class="wrap occi-wrap">
             <h1><span class="dashicons dashicons-book-alt"></span> OCCI Parish Register</h1>
@@ -132,12 +136,26 @@ class OCCIPR_Admin {
                     <div class="occi-small" style="margin-bottom:8px;">Currently Active</div>
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-psr' ) ); ?>" class="button button-primary">View PSR</a>
                 </div>
+
+                <!-- Registration queue stat card -->
+                <div class="occi-stat-card">
+                    <div class="occi-stat-number"><?php echo $pending_reg; ?></div>
+                    <div class="occi-stat-label">Pending Registrations</div>
+                    <div class="occi-small" style="margin-bottom:8px;">Awaiting Review</div>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-registration-queue' ) ); ?>" class="button button-primary">Review Queue</a>
+                </div>
             </div>
             <div class="occi-dashboard-tools">
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-report' ) ); ?>" class="button button-secondary occi-tool-btn">&#128269; Person Report</a>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-cert-settings' ) ); ?>" class="button button-secondary occi-tool-btn">&#127881; Certificate Settings</a>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-parishes' ) ); ?>" class="button button-secondary occi-tool-btn">&#127776; Manage Parishes</a>
             </div>
+            <?php if ( $pending_reg > 0 ) : ?>
+            <div class="occi-notice" style="background:#fff8e1;border-color:#c8a84b;margin-bottom:16px;">
+                <p>&#128276; <strong><?php echo $pending_reg; ?> pending registration <?php echo $pending_reg === 1 ? 'submission' : 'submissions'; ?></strong> awaiting review.
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=occipr-registration-queue' ) ); ?>" class="button button-primary" style="margin-left:12px;">Review Now</a></p>
+            </div>
+            <?php endif; ?>
             <div class="occi-notice">
                 <p><strong>Pax et Bonum.</strong> This database is confidential. Access is restricted to authorized diocesan and parish personnel only. All records are permanent canonical documents.</p>
             </div>
@@ -151,6 +169,7 @@ class OCCIPR_Admin {
             'occi-parish-register', 'occipr-baptisms', 'occipr-confirmations',
             'occipr-marriages', 'occipr-deaths', 'occipr-communions', 'occipr-ordinations',
             'occipr-directory', 'occipr-attendance', 'occipr-donations', 'occipr-ocia', 'occipr-psr', 'occipr-parish-reports', 'occipr-import-export', 'occipr-report',
+            'occipr-registration-queue', 'occipr-registration-settings',
             'occipr-parishes', 'occipr-cert-settings',
         ];
         if ( ! in_array( $page, $pr_pages, true ) ) return;

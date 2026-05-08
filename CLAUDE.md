@@ -6,7 +6,7 @@ Provides a complete canonical sacramental records management system for use at t
 
 This is a SEPARATE and INDEPENDENT project from OCCI Sacramental Records (the national database plugin). Do not mix changes between the two.
 
-**Current version:** 1.0.10
+**Current version:** 1.0.11
 **GitHub repository:** https://github.com/BishopGreer/OCCI-Parish-Register
 **Working directory:** ~/Projects/occi-parish-register
 
@@ -30,6 +30,8 @@ occi-parish-register/
 │   └── js/occi-admin.js
 ├── assets/images/
 │   └── certificate-template.png      # Default OCCI blank certificate (792x1056px)
+├── public/
+│   └── css/occipr-public.css         # Scoped styles for public registration forms
 └── includes/
     ├── class-occipr-admin.php         # Admin menu, footer bar, settings pages
     ├── class-occipr-baptism.php       # Baptism register CRUD
@@ -43,6 +45,7 @@ occi-parish-register/
     ├── class-occipr-ordination.php    # Ordination register CRUD
     ├── class-occipr-parishes.php      # Parish registry with per-parish cert templates
     ├── class-occipr-directory.php     # Parish Directory: households + members, privacy controls, print views
+    ├── class-occipr-registration.php  # Online Registration: public forms, submission queue, approve/reject
     ├── class-occipr-report.php        # Person Sacramental Report (cross-register search)
     ├── class-occipr-updater.php       # Custom updater (GitHub releases, no config needed)
     └── functions.php                  # Shared helper functions
@@ -68,6 +71,7 @@ occi-parish-register/
 - `{$wpdb->prefix}occipr_deaths`
 - `{$wpdb->prefix}occipr_communions`
 - `{$wpdb->prefix}occipr_ordinations`
+- `{$wpdb->prefix}occipr_submissions`  -- online registration queue (pending/approved/rejected)
 
 ## The Six Registers (same fields as national plugin — see national CLAUDE.md for full schema)
 

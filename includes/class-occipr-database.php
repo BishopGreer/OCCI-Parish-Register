@@ -393,6 +393,27 @@ class OCCIPR_Database {
             KEY enrollment_date (enrollment_date)
         ) $charset;" );
 
+        // Online Registration Submissions queue
+        dbDelta( "CREATE TABLE {$wpdb->prefix}occipr_submissions (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            form_type varchar(20) NOT NULL,
+            status varchar(20) NOT NULL DEFAULT 'pending',
+            parish_id bigint(20) UNSIGNED DEFAULT NULL,
+            submitter_ip varchar(45) DEFAULT NULL,
+            submitter_ua varchar(500) DEFAULT NULL,
+            data longtext DEFAULT NULL,
+            staff_notes text DEFAULT NULL,
+            reviewed_by bigint(20) UNSIGNED DEFAULT NULL,
+            reviewed_at datetime DEFAULT NULL,
+            result_ids varchar(255) DEFAULT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY form_type (form_type),
+            KEY status (status),
+            KEY created_at (created_at)
+        ) $charset;" );
+
         update_option( 'occi_pr_db_version', OCCI_PR_VERSION );
     }
 

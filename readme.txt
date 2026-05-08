@@ -4,7 +4,7 @@ Tags: sacramental records, church, old catholic, database, baptism, marriage, or
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,19 @@ Each household must have a parish selected before it will appear in the director
 Records are matched by name plus sacrament date. Baptisms additionally use date of birth when present, so two people with the same name but different birth dates are never treated as the same individual. Existing records are skipped; new records for known individuals are added normally. Parishes are matched by name, city, and state and created automatically if not found.
 
 == Changelog ==
+
+= 1.0.11 =
+* Added Online Registration module with public-facing shortcode forms for Parish Member, PSR, and OCIA registration
+* Three shortcodes: [occipr_member_registration], [occipr_psr_registration], [occipr_ocia_registration]
+* Admin Registration Settings page: enable/disable each form independently, assign a default parish per form, customize success messages, set staff notification email
+* All submissions held in a pending queue (occipr_submissions table) as JSON for staff review before any record is created
+* Admin Online Registrations queue: list view with form type, submission date, and status; detail view showing all submitted fields
+* Approve action: auto-inserts the submission into the correct register table (household + members for parish registration, PSR, or OCIA); uses a database transaction for two-table member inserts to prevent orphan records
+* Reject action: staff can add notes; record marked rejected without creating any register entry
+* Dashboard stat card shows count of pending registrations; yellow notice banner appears when submissions are awaiting review
+* Parish Member form supports multiple family members with dynamically added rows (vanilla JS, no jQuery dependency)
+* Public CSS scoped to .occipr-registration-form to avoid theme conflicts; responsive layout stacks on mobile
+* New database table: occipr_submissions
 
 = 1.0.10 =
 * Added PSR (Parish School of Religion / Religious Education) module
