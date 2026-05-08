@@ -16,8 +16,8 @@
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    padding: 24px 28px;
-    margin-bottom: 24px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
 }
 
 .occipr-section h3 {
@@ -33,7 +33,7 @@
    Fields
    ============================================================ */
 .occipr-field {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 }
 
 .occipr-field:last-child {
@@ -98,7 +98,7 @@
 .occipr-row-2,
 .occipr-row-3 {
     display: grid;
-    gap: 16px;
+    gap: 24px;
 }
 
 .occipr-row-2 {
@@ -116,8 +116,8 @@
     background: #fff;
     border: 1px solid #d5d5d5;
     border-radius: 5px;
-    padding: 18px 20px;
-    margin-bottom: 14px;
+    padding: 24px 26px;
+    margin-bottom: 20px;
     position: relative;
 }
 
