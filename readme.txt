@@ -4,7 +4,7 @@ Tags: sacramental records, church, old catholic, database, baptism, marriage, or
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,7 @@ Parish-level sacramental record database for Old Catholic Churches International
 
 OCCI Parish Register provides a complete, secure, and canonically structured sacramental records management system for Old Catholic Churches International and its constituent parishes. All six principal sacramental registers are stored in MariaDB/MySQL within WordPress.
 
-= Registers Included =
+= Registers and Modules Included =
 
 * Baptism Register
 * Confirmation Register (per-person, flat model)
@@ -23,23 +23,36 @@ OCCI Parish Register provides a complete, secure, and canonically structured sac
 * First Holy Communion Register
 * Ordination Register
 * Parish Registry (shared lookup with per-parish certificate templates)
+* Parish Directory (households and individual members with privacy controls)
+* Mass Attendance (headcount log per service with reports)
+* Donations (donor and fund management with ledger and reports)
+* OCIA -- Order of Christian Initiation of Adults (candidate tracking through all journey stages)
+* PSR / Religious Education (student enrollment through program completion)
+* Parish Reports (printable reports for Attendance, Donations, OCIA, and PSR)
+* Online Registration (public-facing shortcode forms with staff approval queue)
 
 = Key Features =
 
-* Full CRUD for all six registers, searchable by name and date range
+* Full CRUD for all six sacramental registers, searchable by name and date range
 * Surname index search per register; chronological default ordering
 * Parish lookup with city and state; alternate location field for off-site sacraments
 * Notations column on every register; confidential flag on baptism records
 * Certificate printing using a full-page background image template (OCCI default included; per-parish overrides supported)
 * Person Sacramental Report: search all registers simultaneously for a single individual
 * Import / Export: JSON-based exchange format for inter-parish data sharing with intelligent duplicate detection by name and date of birth
-* Automatic update checker supporting self-hosted JSON or GitHub Releases (configured via wp-config.php constants; no WordPress.org required)
+* Parish Directory with household and individual member records, per-field privacy toggles, and printed directory views
+* Mass Attendance module: log headcount per service with year-to-date summaries and monthly reports
+* Donations module: configurable funds, anonymous donation support, multiple payment methods, monthly ledger reports
+* OCIA module: track candidates from Inquiry through Completion with full journey dates, sponsors, and links to sacramental records created at reception
+* PSR module: track students by grade, academic year, catechist, and sacramental status (Baptized, First Communion, Confirmed)
+* Online Registration: public shortcode forms for Parish Member, PSR, and OCIA; submissions held in a staff review queue before any record is created; optional hCaptcha or Google reCAPTCHA v2 bot protection
+* Automatic update checker hardcoded to the official GitHub repository -- no configuration required, updates appear in WordPress Dashboard > Updates automatically
 * Two access roles: occipr_manage_records (full CRUD) and occipr_view_records (read-only); both granted to Contributor role and above on activation
 * Per-parish certificate template images via WordPress Media Library
 * Fixed admin footer bar displaying organization name and version on all plugin pages
 * All queries use $wpdb->prepare() for SQL injection prevention; all forms protected with WordPress nonces
 * Date formatting prints month name per canonical handbook guidelines (e.g., "May 5, 2026")
-* Print-optimized CSS for certificates and reports; signature lines included
+* Print-optimized CSS for certificates, registers, and reports; signature lines included
 
 = Canonical Compliance =
 
@@ -47,16 +60,7 @@ Designed in alignment with canon law (cc. 535, 874-878, 892-896, 1121-1123, 1182
 
 = Automatic Updates =
 
-To enable automatic update checking without WordPress.org, add one of the following to wp-config.php:
-
-**Self-hosted (recommended):**
-  define( 'OCCI_UPDATE_URL', 'https://myocci.org/updates/occi-parish-register.json' );
-
-**GitHub Releases:**
-  define( 'OCCI_UPDATE_URL',    'https://github.com/YOUR-ORG/OCCI-sacramental-record' );
-  define( 'OCCI_UPDATE_SOURCE', 'github' );
-
-Full configuration instructions and the required JSON format are shown in Certificate Settings once the plugin is installed.
+No configuration is required. The plugin checks for new releases directly from its GitHub repository (BishopGreer/OCCI-Parish-Register) and surfaces them in WordPress Dashboard > Updates like any other plugin. Updates are checked every 12 hours. A Force Update Check button is available on the Certificate Settings page.
 
 == Installation ==
 
@@ -66,19 +70,27 @@ Full configuration instructions and the required JSON format are shown in Certif
 4. Add your parishes first under the Parishes submenu.
 5. Begin entering records in each register.
 
-To enable automatic updates, add the appropriate constants to wp-config.php before or after installation (see Description above).
+Automatic updates require no additional setup. The plugin will notify you of new releases in WordPress Dashboard > Updates.
 
 == Database Tables ==
 
 The following tables are created on activation using dbDelta() and are compatible with MariaDB and MySQL:
 
-* {prefix}occi_parishes
-* {prefix}occi_baptisms
-* {prefix}occi_confirmations
-* {prefix}occi_marriages
-* {prefix}occi_deaths
-* {prefix}occi_communions
-* {prefix}occi_ordinations
+* {prefix}occipr_parishes
+* {prefix}occipr_baptisms
+* {prefix}occipr_confirmations
+* {prefix}occipr_marriages
+* {prefix}occipr_deaths
+* {prefix}occipr_communions
+* {prefix}occipr_ordinations
+* {prefix}occipr_households
+* {prefix}occipr_members
+* {prefix}occipr_attendance
+* {prefix}occipr_donation_funds
+* {prefix}occipr_donations
+* {prefix}occipr_ocia
+* {prefix}occipr_psr
+* {prefix}occipr_submissions
 
 Tables are updated automatically when a new plugin version is installed; no manual migration is required.
 
@@ -98,7 +110,7 @@ No. Per canon law and best practices, physical registers remain the authoritativ
 
 = How do I set up automatic updates? =
 
-See the Description section above and the Certificate Settings page within the plugin after installation.
+Nothing to set up. The plugin checks GitHub for new releases automatically and surfaces them in WordPress Dashboard > Updates. If an update is not appearing, go to Sacramental Records > Certificate Settings and click Force Update Check Now to clear the cached check.
 
 = Can each parish use its own certificate background image? =
 
@@ -113,6 +125,14 @@ Each household must have a parish selected before it will appear in the director
 Records are matched by name plus sacrament date. Baptisms additionally use date of birth when present, so two people with the same name but different birth dates are never treated as the same individual. Existing records are skipped; new records for known individuals are added normally. Parishes are matched by name, city, and state and created automatically if not found.
 
 == Changelog ==
+
+= 2.0.3 =
+* Corrected readme.txt throughout: removed all references to wp-config.php constants for auto-updates (no configuration is or was ever required for this plugin)
+* Fixed database table list: corrected table prefix from occi_ to occipr_ and added all 8 tables introduced since 1.0.0 (households, members, attendance, donation_funds, donations, ocia, psr, submissions)
+* Expanded Registers and Modules section to list all current modules: Parish Directory, Mass Attendance, Donations, OCIA, PSR, Parish Reports, Online Registration
+* Expanded Key Features section to reflect all features added since the initial release
+* Updated Automatic Updates section and FAQ answer to accurately describe the zero-configuration GitHub-based updater
+* Updated Upgrade Notice to current version
 
 = 2.0.2 =
 * Added CAPTCHA bot protection for all public registration forms
@@ -257,8 +277,8 @@ Records are matched by name plus sacrament date. Baptisms additionally use date 
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release.
+= 2.0.2 =
+Adds hCaptcha and Google reCAPTCHA v2 support for public registration forms. No configuration changes required for existing installs.
 
 == Notes ==
 
