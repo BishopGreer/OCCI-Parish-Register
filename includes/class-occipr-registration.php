@@ -19,6 +19,9 @@ class OCCIPR_Registration {
             'member_success'   => 'Thank you for registering! Your information has been submitted and will be reviewed by our parish staff. We will be in touch soon.',
             'psr_success'      => 'Thank you for registering for PSR! Your submission has been received and will be reviewed shortly. We will contact you with next steps.',
             'ocia_success'     => 'Thank you for your interest! Your inquiry has been received. Someone from our parish will be in touch with you soon. Pax et Bonum.',
+            'captcha_provider'   => 'none',   // 'none' | 'hcaptcha' | 'recaptcha'
+            'captcha_site_key'   => '',
+            'captcha_secret_key' => '',
         ] );
     }
 
@@ -46,6 +49,59 @@ class OCCIPR_Registration {
         );
     }
 
+    // Enqueue the captcha JS library for the configured provider.
+    // Called from each shortcode so it only loads on pages with a form.
+    private static function enqueue_captcha_script( array $s ): void {
+        if ( $s['captcha_provider'] === 'hcaptcha' && $s['captcha_site_key'] ) {
+            wp_enqueue_script( 'hcaptcha', 'https://js.hcaptcha.com/1/api.js', [], null, false );
+        } elseif ( $s['captcha_provider'] === 'recaptcha' && $s['captcha_site_key'] ) {
+            wp_enqueue_script( 'google-recaptcha', 'https://www.google.com/recaptcha/api.js', [], null, false );
+        }
+    }
+
+    // Render the captcha widget div inside a form.
+    private static function render_captcha_widget( array $s ): void {
+        if ( $s['captcha_provider'] === 'none' || empty( $s['captcha_site_key'] ) ) return;
+        echo '<div class="occipr-field occipr-captcha-wrap">';
+        if ( $s['captcha_provider'] === 'hcaptcha' ) {
+            echo '<div class="h-captcha" data-sitekey="' . esc_attr( $s['captcha_site_key'] ) . '"></div>';
+        } elseif ( $s['captcha_provider'] === 'recaptcha' ) {
+            echo '<div class="g-recaptcha" data-sitekey="' . esc_attr( $s['captcha_site_key'] ) . '"></div>';
+        }
+        echo '</div>';
+    }
+
+    // Server-side captcha verification. Returns true if valid or if no captcha configured.
+    private static function verify_captcha( array $s ): bool {
+        $provider = $s['captcha_provider'];
+        if ( $provider === 'none' || empty( $s['captcha_secret_key'] ) ) return true;
+
+        if ( $provider === 'hcaptcha' ) {
+            $token = sanitize_text_field( $_POST['h-captcha-response'] ?? '' );
+            $url   = 'https://hcaptcha.com/siteverify';
+        } elseif ( $provider === 'recaptcha' ) {
+            $token = sanitize_text_field( $_POST['g-recaptcha-response'] ?? '' );
+            $url   = 'https://www.google.com/recaptcha/api/siteverify';
+        } else {
+            return true;
+        }
+
+        if ( empty( $token ) ) return false;
+
+        $response = wp_remote_post( $url, [
+            'timeout' => 10,
+            'body'    => [
+                'secret'   => $s['captcha_secret_key'],
+                'response' => $token,
+                'remoteip' => sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '' ),
+            ],
+        ] );
+
+        if ( is_wp_error( $response ) ) return false;
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        return ! empty( $body['success'] );
+    }
+
     // -------------------------------------------------------------------------
     // PUBLIC FORM SUBMISSION HANDLER (PRG pattern)
     // -------------------------------------------------------------------------
@@ -68,6 +124,12 @@ class OCCIPR_Registration {
 
         $type = sanitize_key( $_POST['occipr_reg_type'] );
         $s    = self::get_settings();
+
+        // Verify captcha before anything else
+        if ( ! self::verify_captcha( $s ) ) {
+            wp_safe_redirect( add_query_arg( 'occipr_error', 'captcha', $return_url ) );
+            exit;
+        }
 
         if ( ! in_array( $type, [ 'member', 'psr', 'ocia' ], true ) || empty( $s[ $type . '_enabled' ] ) ) {
             wp_safe_redirect( add_query_arg( 'occipr_error', 'disabled', $return_url ) );
@@ -195,6 +257,7 @@ class OCCIPR_Registration {
         $s = self::get_settings();
         if ( ! $s['member_enabled'] ) return '';
         wp_enqueue_style( 'occipr-public', OCCI_PR_PLUGIN_URL . 'public/css/occipr-public.css', [], OCCI_PR_VERSION );
+        self::enqueue_captcha_script( $s );
         if ( ( $_GET['occipr_submitted'] ?? '' ) === 'member' ) {
             return self::render_success( $s['member_success'] );
         }
@@ -208,6 +271,7 @@ class OCCIPR_Registration {
         $s = self::get_settings();
         if ( ! $s['psr_enabled'] ) return '';
         wp_enqueue_style( 'occipr-public', OCCI_PR_PLUGIN_URL . 'public/css/occipr-public.css', [], OCCI_PR_VERSION );
+        self::enqueue_captcha_script( $s );
         if ( ( $_GET['occipr_submitted'] ?? '' ) === 'psr' ) {
             return self::render_success( $s['psr_success'] );
         }
@@ -221,6 +285,7 @@ class OCCIPR_Registration {
         $s = self::get_settings();
         if ( ! $s['ocia_enabled'] ) return '';
         wp_enqueue_style( 'occipr-public', OCCI_PR_PLUGIN_URL . 'public/css/occipr-public.css', [], OCCI_PR_VERSION );
+        self::enqueue_captcha_script( $s );
         if ( ( $_GET['occipr_submitted'] ?? '' ) === 'ocia' ) {
             return self::render_success( $s['ocia_success'] );
         }
@@ -238,7 +303,12 @@ class OCCIPR_Registration {
     }
 
     private static function render_error(): void {
-        echo '<div class="occipr-message occipr-error">There was a problem submitting your form. Please review your entries and try again. If this continues, please contact the parish office directly.</div>';
+        $code = sanitize_key( $_GET['occipr_error'] ?? '' );
+        $msg  = match( $code ) {
+            'captcha' => 'Please complete the verification check and try again.',
+            default   => 'There was a problem submitting your form. Please review your entries and try again. If this continues, please contact the parish office directly.',
+        };
+        echo '<div class="occipr-message occipr-error">' . esc_html( $msg ) . '</div>';
     }
 
     // Shared hidden fields: type, nonce, return URL, optional default parish
@@ -333,6 +403,8 @@ class OCCIPR_Registration {
                         <textarea name="notes" class="occipr-textarea" rows="3" placeholder="Any questions or additional information for the parish office?"></textarea>
                     </div>
                 </div>
+
+                <?php self::render_captcha_widget( $s ); ?>
 
                 <div class="occipr-submit-wrap">
                     <button type="submit" class="occipr-btn-primary">Submit Registration</button>
@@ -485,6 +557,8 @@ class OCCIPR_Registration {
                     </div>
                 </div>
 
+                <?php self::render_captcha_widget( $s ); ?>
+
                 <div class="occipr-submit-wrap">
                     <button type="submit" class="occipr-btn-primary">Submit PSR Registration</button>
                     <p class="occipr-submit-note">Your registration will be reviewed by parish staff before being confirmed.</p>
@@ -558,6 +632,8 @@ class OCCIPR_Registration {
                             placeholder="Please share a little about yourself and what has brought you to inquire about joining our community."></textarea>
                     </div>
                 </div>
+
+                <?php self::render_captcha_widget( $s ); ?>
 
                 <div class="occipr-submit-wrap">
                     <button type="submit" class="occipr-btn-primary">Submit Inquiry</button>
@@ -1073,6 +1149,43 @@ class OCCIPR_Registration {
                     </table>
                 </div>
 
+                <div class="occi-section">
+                    <h2>Bot Protection (CAPTCHA)</h2>
+                    <table class="form-table">
+                        <tr>
+                            <th><label for="captcha_provider">Provider</label></th>
+                            <td>
+                                <select id="captcha_provider" name="captcha_provider" id="occipr-captcha-provider">
+                                    <option value="none"<?php      selected( $s['captcha_provider'], 'none' ); ?>>None (no CAPTCHA)</option>
+                                    <option value="hcaptcha"<?php  selected( $s['captcha_provider'], 'hcaptcha' ); ?>>hCaptcha</option>
+                                    <option value="recaptcha"<?php selected( $s['captcha_provider'], 'recaptcha' ); ?>>Google reCAPTCHA v2</option>
+                                </select>
+                                <p class="description">
+                                    hCaptcha: get keys at <a href="https://www.hcaptcha.com" target="_blank">hcaptcha.com</a> &mdash;
+                                    reCAPTCHA v2: get keys at <a href="https://www.google.com/recaptcha/admin" target="_blank">google.com/recaptcha/admin</a>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="captcha_site_key">Site Key <em>(public)</em></label></th>
+                            <td>
+                                <input type="text" id="captcha_site_key" name="captcha_site_key"
+                                       class="regular-text" value="<?php echo esc_attr( $s['captcha_site_key'] ); ?>">
+                                <p class="description">Paste the site key (public key) from your CAPTCHA provider dashboard.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="captcha_secret_key">Secret Key <em>(private)</em></label></th>
+                            <td>
+                                <input type="password" id="captcha_secret_key" name="captcha_secret_key"
+                                       class="regular-text" value="<?php echo esc_attr( $s['captcha_secret_key'] ); ?>"
+                                       autocomplete="new-password">
+                                <p class="description">Paste the secret key (private key) from your CAPTCHA provider dashboard. This is never shown publicly.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
                 <?php
                 self::settings_form_section(
                     'member', 'Parish Member Registration', '[occipr_member_registration]',
@@ -1163,17 +1276,22 @@ class OCCIPR_Registration {
         check_admin_referer( 'occipr_save_reg_settings', 'occipr_reg_nonce' );
 
         $defaults = self::get_settings();
+        $provider = sanitize_key( $_POST['captcha_provider'] ?? 'none' );
+        if ( ! in_array( $provider, [ 'none', 'hcaptcha', 'recaptcha' ], true ) ) $provider = 'none';
         update_option( 'occi_pr_registration', [
-            'notify_email'     => sanitize_email( $_POST['notify_email'] ?? '' ),
-            'member_enabled'   => isset( $_POST['member_enabled'] ) ? 1 : 0,
-            'psr_enabled'      => isset( $_POST['psr_enabled'] )    ? 1 : 0,
-            'ocia_enabled'     => isset( $_POST['ocia_enabled'] )   ? 1 : 0,
-            'member_parish_id' => absint( $_POST['member_parish_id'] ?? 0 ),
-            'psr_parish_id'    => absint( $_POST['psr_parish_id']    ?? 0 ),
-            'ocia_parish_id'   => absint( $_POST['ocia_parish_id']   ?? 0 ),
-            'member_success'   => sanitize_textarea_field( $_POST['member_success'] ?? $defaults['member_success'] ),
-            'psr_success'      => sanitize_textarea_field( $_POST['psr_success']    ?? $defaults['psr_success'] ),
-            'ocia_success'     => sanitize_textarea_field( $_POST['ocia_success']   ?? $defaults['ocia_success'] ),
+            'notify_email'       => sanitize_email( $_POST['notify_email'] ?? '' ),
+            'member_enabled'     => isset( $_POST['member_enabled'] ) ? 1 : 0,
+            'psr_enabled'        => isset( $_POST['psr_enabled'] )    ? 1 : 0,
+            'ocia_enabled'       => isset( $_POST['ocia_enabled'] )   ? 1 : 0,
+            'member_parish_id'   => absint( $_POST['member_parish_id'] ?? 0 ),
+            'psr_parish_id'      => absint( $_POST['psr_parish_id']    ?? 0 ),
+            'ocia_parish_id'     => absint( $_POST['ocia_parish_id']   ?? 0 ),
+            'member_success'     => sanitize_textarea_field( $_POST['member_success'] ?? $defaults['member_success'] ),
+            'psr_success'        => sanitize_textarea_field( $_POST['psr_success']    ?? $defaults['psr_success'] ),
+            'ocia_success'       => sanitize_textarea_field( $_POST['ocia_success']   ?? $defaults['ocia_success'] ),
+            'captcha_provider'   => $provider,
+            'captcha_site_key'   => sanitize_text_field( $_POST['captcha_site_key']   ?? '' ),
+            'captcha_secret_key' => sanitize_text_field( $_POST['captcha_secret_key'] ?? '' ),
         ] );
 
         wp_redirect( admin_url( 'admin.php?page=occipr-registration-settings&saved=1' ) );

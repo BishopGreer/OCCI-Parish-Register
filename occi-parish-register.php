@@ -3,7 +3,7 @@
  * Plugin Name:       OCCI Parish Register
  * Plugin URI:        https://myocci.org
  * Description:       Parish-level sacramental record database for Old Catholic Churches International. Manages Baptism, Confirmation, Marriage, Death, First Communion, and Ordination registers.
- * Version:           2.0.1
+ * Version:           2.0.2
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Old Catholic Churches International
@@ -14,7 +14,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'OCCI_PR_VERSION',    '2.0.1' );
+define( 'OCCI_PR_VERSION',    '2.0.2' );
 define( 'OCCI_PR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OCCI_PR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
