@@ -141,11 +141,15 @@ class OCCIPR_Updater {
     // -------------------------------------------------------------------------
 
     private static function plugin_icons(): array {
-        $base = OCCI_PR_PLUGIN_URL . 'assets/images/';
-        $dir  = OCCI_PR_PLUGIN_DIR . 'assets/images/';
+        $base  = OCCI_PR_PLUGIN_URL . 'assets/images/';
+        $dir   = OCCI_PR_PLUGIN_DIR . 'assets/images/';
         $icons = [];
-        if ( file_exists( $dir . 'icon-128x128.png' ) ) $icons['1x'] = $base . 'icon-128x128.png';
-        if ( file_exists( $dir . 'icon-256x256.png' ) ) $icons['2x'] = $base . 'icon-256x256.png';
+        foreach ( [ 'icon-128x128.png', 'icon-128x128.jpg' ] as $f ) {
+            if ( file_exists( $dir . $f ) ) { $icons['1x'] = $base . $f; break; }
+        }
+        foreach ( [ 'icon-256x256.png', 'icon-256x256.jpg' ] as $f ) {
+            if ( file_exists( $dir . $f ) ) { $icons['2x'] = $base . $f; break; }
+        }
         return $icons;
     }
 
@@ -153,8 +157,12 @@ class OCCIPR_Updater {
         $base    = OCCI_PR_PLUGIN_URL . 'assets/images/';
         $dir     = OCCI_PR_PLUGIN_DIR . 'assets/images/';
         $banners = [];
-        if ( file_exists( $dir . 'banner-772x250.jpg' ) )   $banners['low']  = $base . 'banner-772x250.jpg';
-        if ( file_exists( $dir . 'banner-1544x500.jpg' ) )  $banners['high'] = $base . 'banner-1544x500.jpg';
+        foreach ( [ 'banner-772x250.jpg', 'banner-772x250.png' ] as $f ) {
+            if ( file_exists( $dir . $f ) ) { $banners['low'] = $base . $f; break; }
+        }
+        foreach ( [ 'banner-1544x500.jpg', 'banner-1544x500.png' ] as $f ) {
+            if ( file_exists( $dir . $f ) ) { $banners['high'] = $base . $f; break; }
+        }
         return $banners;
     }
 
