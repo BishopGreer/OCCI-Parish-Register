@@ -45,8 +45,8 @@ class OCCIPR_Updater {
                 'new_version'  => $remote->version,
                 'url'          => $remote->details_url,
                 'package'      => $remote->download_url,
-                'icons'        => [],
-                'banners'      => [],
+                'icons'        => self::plugin_icons(),
+                'banners'      => self::plugin_banners(),
                 'tested'       => $remote->tested,
                 'requires'     => '6.0',
                 'requires_php' => '8.0',
@@ -91,6 +91,8 @@ class OCCIPR_Updater {
             'tested'         => $remote->tested,
             'last_updated'   => $remote->last_updated,
             'download_link'  => $remote->download_url,
+            'icons'          => self::plugin_icons(),
+            'banners'        => self::plugin_banners(),
             'sections'       => [
                 'description' => 'Parish-level sacramental record database for Old Catholic Churches International.',
                 'changelog'   => $remote->changelog,
@@ -130,6 +132,30 @@ class OCCIPR_Updater {
         }
 
         return $source;
+    }
+
+    // -------------------------------------------------------------------------
+    // Plugin icon and banner URLs (served from the installed plugin directory)
+    // Drop the appropriately named files into assets/images/ and they appear
+    // automatically on the plugin list and update detail popup.
+    // -------------------------------------------------------------------------
+
+    private static function plugin_icons(): array {
+        $base = OCCI_PR_PLUGIN_URL . 'assets/images/';
+        $dir  = OCCI_PR_PLUGIN_DIR . 'assets/images/';
+        $icons = [];
+        if ( file_exists( $dir . 'icon-128x128.png' ) ) $icons['1x'] = $base . 'icon-128x128.png';
+        if ( file_exists( $dir . 'icon-256x256.png' ) ) $icons['2x'] = $base . 'icon-256x256.png';
+        return $icons;
+    }
+
+    private static function plugin_banners(): array {
+        $base    = OCCI_PR_PLUGIN_URL . 'assets/images/';
+        $dir     = OCCI_PR_PLUGIN_DIR . 'assets/images/';
+        $banners = [];
+        if ( file_exists( $dir . 'banner-772x250.jpg' ) )   $banners['low']  = $base . 'banner-772x250.jpg';
+        if ( file_exists( $dir . 'banner-1544x500.jpg' ) )  $banners['high'] = $base . 'banner-1544x500.jpg';
+        return $banners;
     }
 
     // -------------------------------------------------------------------------

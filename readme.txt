@@ -4,7 +4,7 @@ Tags: sacramental records, church, old catholic, database, baptism, marriage, or
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -125,6 +125,10 @@ Each household must have a parish selected before it will appear in the director
 Records are matched by name plus sacrament date. Baptisms additionally use date of birth when present, so two people with the same name but different birth dates are never treated as the same individual. Existing records are skipped; new records for known individuals are added normally. Parishes are matched by name, city, and state and created automatically if not found.
 
 == Changelog ==
+
+= 2.0.4 =
+* Added plugin icon and banner image support for the WordPress plugin list and update detail popup
+* Drop icon-128x128.png, icon-256x256.png, banner-772x250.jpg, and/or banner-1544x500.jpg into assets/images/ and they appear automatically -- no code changes needed
 
 = 2.0.3 =
 * Corrected readme.txt throughout: removed all references to wp-config.php constants for auto-updates (no configuration is or was ever required for this plugin)
